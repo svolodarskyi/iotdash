@@ -118,6 +118,8 @@ services:
       INFLUXDB_ORG: ${INFLUXDB_ORG:-iotorg}
       INFLUXDB_BUCKET: ${INFLUXDB_BUCKET:-iot}
       GRAFANA_URL: ${GRAFANA_URL:-http://grafana:3000}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-change-in-production}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     depends_on:
       postgres:
         condition: service_healthy

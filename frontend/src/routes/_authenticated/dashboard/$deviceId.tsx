@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useDevice } from '../../hooks/useDevice'
-import { useDeviceEmbedUrls } from '../../hooks/useDeviceEmbedUrls'
-import { GrafanaEmbed } from '../../components/GrafanaEmbed'
+import { useDevice } from '../../../hooks/useDevice'
+import { useDeviceEmbedUrls } from '../../../hooks/useDeviceEmbedUrls'
+import { GrafanaEmbed } from '../../../components/GrafanaEmbed'
 
-export const Route = createFileRoute('/dashboard/$deviceId')({
+export const Route = createFileRoute('/_authenticated/dashboard/$deviceId')({
   component: DeviceDetail,
 })
 

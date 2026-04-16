@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     INFLUXDB_BUCKET: str = "iot"
     GRAFANA_URL: str = "http://grafana:3000"
 
+    JWT_SECRET_KEY: str = "dev-secret-change-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRE_MINUTES: int = 1440  # 24 hours
+    FRONTEND_URL: str = "http://localhost:5173"
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 

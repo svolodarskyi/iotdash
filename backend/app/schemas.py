@@ -44,3 +44,28 @@ class DeviceEmbedUrlsOut(BaseModel):
     device_id: uuid.UUID
     device_code: str
     urls: list[EmbedUrl]
+
+
+# ── Auth ─────────────────────────────────────────────
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class UserOut(BaseModel):
+    id: uuid.UUID
+    email: str
+    full_name: str
+    organisation_id: uuid.UUID
+    role: str
+
+    model_config = {"from_attributes": True}
+
+
+class MeResponse(BaseModel):
+    id: uuid.UUID
+    email: str
+    full_name: str
+    organisation_id: uuid.UUID
+    organisation_name: str
+    role: str

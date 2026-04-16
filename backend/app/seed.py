@@ -20,12 +20,11 @@ def seed(db: Session) -> None:
         print("Database already seeded, skipping.")
         return
 
-    # Organisation
+    # ── Organisation 1: Demo Corp ─────────────────────
     org = Organisation(name="Demo Corp", grafana_org_id=1)
     db.add(org)
     db.flush()
 
-    # Admin user
     admin = User(
         email="admin@democorp.com",
         password_hash=hash_password("admin123"),
@@ -35,7 +34,6 @@ def seed(db: Session) -> None:
     )
     db.add(admin)
 
-    # Devices
     sensor01 = Device(
         device_code="sensor01",
         name="Temperature Sensor 01",
@@ -52,7 +50,6 @@ def seed(db: Session) -> None:
     )
     db.add_all([sensor01, sensor02])
 
-    # Grafana dashboard
     dashboard = GrafanaDashboard(
         organisation_id=org.id,
         title="Temperature Overview",
@@ -63,12 +60,47 @@ def seed(db: Session) -> None:
     )
     db.add(dashboard)
 
+    # ── Organisation 2: Acme IoT ──────────────────────
+    org2 = Organisation(name="Acme IoT", grafana_org_id=2)
+    db.add(org2)
+    db.flush()
+
+    viewer = User(
+        email="viewer@acmeiot.com",
+        password_hash=hash_password("viewer123"),
+        full_name="Acme Viewer",
+        organisation_id=org2.id,
+        role="viewer",
+    )
+    db.add(viewer)
+
+    sensor03 = Device(
+        device_code="sensor03",
+        name="Temperature Sensor 03",
+        organisation_id=org2.id,
+        device_type="temperature",
+        metadata_={"location": "Room C", "unit": "celsius"},
+    )
+    db.add(sensor03)
+
+    dashboard2 = GrafanaDashboard(
+        organisation_id=org2.id,
+        title="Temperature Overview",
+        grafana_uid="iot-temperature",
+        grafana_org_id=2,
+        panel_ids=[1, 2, 3],
+        embed_base_url="http://grafana:3000",
+    )
+    db.add(dashboard2)
+
     db.commit()
     print("Seed data created successfully.")
-    print(f"  Organisation: {org.name} (id={org.id})")
-    print(f"  Admin user:   {admin.email}")
-    print(f"  Devices:      {sensor01.device_code}, {sensor02.device_code}")
-    print(f"  Dashboard:    {dashboard.title}")
+    print(f"  Organisation 1: {org.name} (id={org.id})")
+    print(f"    Admin user:   {admin.email} / admin123")
+    print(f"    Devices:      {sensor01.device_code}, {sensor02.device_code}")
+    print(f"  Organisation 2: {org2.name} (id={org2.id})")
+    print(f"    Viewer user:  {viewer.email} / viewer123")
+    print(f"    Devices:      {sensor03.device_code}")
 
 
 def main() -> None:

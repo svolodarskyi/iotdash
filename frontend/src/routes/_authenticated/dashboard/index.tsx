@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useDevices } from '../../hooks/useDevices'
-import { DeviceCard } from '../../components/DeviceCard'
+import { useDevices } from '../../../hooks/useDevices'
+import { DeviceCard } from '../../../components/DeviceCard'
 
-export const Route = createFileRoute('/dashboard/')({
+export const Route = createFileRoute('/_authenticated/dashboard/')({
   component: DashboardIndex,
 })
 

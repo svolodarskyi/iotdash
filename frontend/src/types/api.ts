@@ -29,3 +29,29 @@ export interface DeviceEmbedUrls {
   device_code: string
   urls: EmbedUrl[]
 }
+
+export interface User {
+  id: string
+  email: string
+  full_name: string
+  organisation_id: string
+  role: string
+}
+
+export interface MeResponse {
+  id: string
+  email: string
+  full_name: string
+  organisation_id: string
+  organisation_name: string
+  role: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  user: User
+}
