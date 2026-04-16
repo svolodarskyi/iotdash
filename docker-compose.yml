@@ -1,0 +1,138 @@
+services:
+
+  # ── MQTT Broker ──────────────────────────────────
+  emqx:
+    image: emqx/emqx:5.8
+    container_name: emqx
+    ports:
+      - "1883:1883"     # MQTT
+      - "18083:18083"   # EMQX Dashboard
+    volumes:
+      - emqx_data:/opt/emqx/data
+    environment:
+      EMQX_NAME: emqx
+      EMQX_HOST: 127.0.0.1
+      EMQX_ALLOW_ANONYMOUS: "true"
+      EMQX_LISTENER__TCP__EXTERNAL: "1883"
+    networks:
+      - iot_net
+    healthcheck:
+      test: ["CMD", "emqx", "ctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # ── Bridge: MQTT → InfluxDB ──────────────────────
+  telegraf:
+    image: telegraf:1.33
+    container_name: telegraf
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      emqx:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+    networks:
+      - iot_net
+    restart: unless-stopped
+
+  # ── Time-series Database ─────────────────────────
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: admin1234
+      DOCKER_INFLUXDB_INIT_ORG: iotorg
+      DOCKER_INFLUXDB_INIT_BUCKET: iot
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: mytoken123
+    networks:
+      - iot_net
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # ── Dashboard ────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/temperature.json
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_NAME: "Main Org."
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    networks:
+      - iot_net
+
+  # ── Relational Database ─────────────────────────
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-iotdash}
+      POSTGRES_USER: ${POSTGRES_USER:-iotdash}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-iotdash_dev}
+    networks:
+      - iot_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-iotdash}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ── Backend API ──────────────────────────────────
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://iotdash:iotdash_dev@postgres:5432/iotdash}
+      INFLUXDB_URL: ${INFLUXDB_URL:-http://influxdb:8086}
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-mytoken123}
+      INFLUXDB_ORG: ${INFLUXDB_ORG:-iotorg}
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET:-iot}
+      GRAFANA_URL: ${GRAFANA_URL:-http://grafana:3000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+    networks:
+      - iot_net
+    restart: unless-stopped
+
+volumes:
+  emqx_data:
+  influxdb_data:
+  grafana_data:
+  postgres_data:
+
+networks:
+  iot_net:
+    driver: bridge
