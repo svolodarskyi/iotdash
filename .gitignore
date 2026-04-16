@@ -37,8 +37,10 @@ htmlcov/
 # Alembic
 *.pyc
 
-# Node (future frontend)
+# Node / Frontend
 node_modules/
+frontend/dist/
+*.tsbuildinfo
 
 .claude
 docs
