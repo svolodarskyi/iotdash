@@ -7,7 +7,7 @@ import bcrypt
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
-from app.models import Device, GrafanaDashboard, Organisation, User
+from app.models import Alert, Device, GrafanaDashboard, Organisation, User
 
 
 def hash_password(password: str) -> str:
@@ -59,6 +59,18 @@ def seed(db: Session) -> None:
         embed_base_url="http://grafana:3000",
     )
     db.add(dashboard)
+    db.flush()
+
+    alert1 = Alert(
+        device_id=sensor01.id,
+        created_by=admin.id,
+        metric="temperature",
+        condition="above",
+        threshold=30.0,
+        duration_seconds=60,
+        notification_email="admin@democorp.com",
+    )
+    db.add(alert1)
 
     # ── Organisation 2: Acme IoT ──────────────────────
     org2 = Organisation(name="Acme IoT", grafana_org_id=2)
@@ -92,6 +104,18 @@ def seed(db: Session) -> None:
         embed_base_url="http://grafana:3000",
     )
     db.add(dashboard2)
+    db.flush()
+
+    alert2 = Alert(
+        device_id=sensor03.id,
+        created_by=viewer.id,
+        metric="temperature",
+        condition="above",
+        threshold=35.0,
+        duration_seconds=120,
+        notification_email="viewer@acmeiot.com",
+    )
+    db.add(alert2)
 
     db.commit()
     print("Seed data created successfully.")
@@ -101,6 +125,9 @@ def seed(db: Session) -> None:
     print(f"  Organisation 2: {org2.name} (id={org2.id})")
     print(f"    Viewer user:  {viewer.email} / viewer123")
     print(f"    Devices:      {sensor03.device_code}")
+    print("  Alerts:")
+    print(f"    {sensor01.device_code}: {alert1.metric} {alert1.condition} {alert1.threshold}")
+    print(f"    {sensor03.device_code}: {alert2.metric} {alert2.condition} {alert2.threshold}")
 
 
 def main() -> None:

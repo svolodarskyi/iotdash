@@ -13,7 +13,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedAlertsIndexRouteImport } from './routes/_authenticated/alerts/index'
 import { Route as AuthenticatedDashboardDeviceIdRouteImport } from './routes/_authenticated/dashboard/$deviceId'
+import { Route as AuthenticatedAlertsNewRouteImport } from './routes/_authenticated/alerts/new'
+import { Route as AuthenticatedAlertsAlertIdEditRouteImport } from './routes/_authenticated/alerts/$alertId.edit'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -35,45 +38,88 @@ const AuthenticatedDashboardIndexRoute =
     path: '/dashboard/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAlertsIndexRoute =
+  AuthenticatedAlertsIndexRouteImport.update({
+    id: '/alerts/',
+    path: '/alerts/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDashboardDeviceIdRoute =
   AuthenticatedDashboardDeviceIdRouteImport.update({
     id: '/dashboard/$deviceId',
     path: '/dashboard/$deviceId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAlertsNewRoute = AuthenticatedAlertsNewRouteImport.update({
+  id: '/alerts/new',
+  path: '/alerts/new',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAlertsAlertIdEditRoute =
+  AuthenticatedAlertsAlertIdEditRouteImport.update({
+    id: '/alerts/$alertId/edit',
+    path: '/alerts/$alertId/edit',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/alerts/new': typeof AuthenticatedAlertsNewRoute
   '/dashboard/$deviceId': typeof AuthenticatedDashboardDeviceIdRoute
+  '/alerts/': typeof AuthenticatedAlertsIndexRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/alerts/$alertId/edit': typeof AuthenticatedAlertsAlertIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/alerts/new': typeof AuthenticatedAlertsNewRoute
   '/dashboard/$deviceId': typeof AuthenticatedDashboardDeviceIdRoute
+  '/alerts': typeof AuthenticatedAlertsIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/alerts/$alertId/edit': typeof AuthenticatedAlertsAlertIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/alerts/new': typeof AuthenticatedAlertsNewRoute
   '/_authenticated/dashboard/$deviceId': typeof AuthenticatedDashboardDeviceIdRoute
+  '/_authenticated/alerts/': typeof AuthenticatedAlertsIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/alerts/$alertId/edit': typeof AuthenticatedAlertsAlertIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/dashboard/$deviceId' | '/dashboard/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/alerts/new'
+    | '/dashboard/$deviceId'
+    | '/alerts/'
+    | '/dashboard/'
+    | '/alerts/$alertId/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard/$deviceId' | '/dashboard'
+  to:
+    | '/'
+    | '/login'
+    | '/alerts/new'
+    | '/dashboard/$deviceId'
+    | '/alerts'
+    | '/dashboard'
+    | '/alerts/$alertId/edit'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/alerts/new'
     | '/_authenticated/dashboard/$deviceId'
+    | '/_authenticated/alerts/'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/alerts/$alertId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -112,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/alerts/': {
+      id: '/_authenticated/alerts/'
+      path: '/alerts'
+      fullPath: '/alerts/'
+      preLoaderRoute: typeof AuthenticatedAlertsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard/$deviceId': {
       id: '/_authenticated/dashboard/$deviceId'
       path: '/dashboard/$deviceId'
@@ -119,17 +172,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardDeviceIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/alerts/new': {
+      id: '/_authenticated/alerts/new'
+      path: '/alerts/new'
+      fullPath: '/alerts/new'
+      preLoaderRoute: typeof AuthenticatedAlertsNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/alerts/$alertId/edit': {
+      id: '/_authenticated/alerts/$alertId/edit'
+      path: '/alerts/$alertId/edit'
+      fullPath: '/alerts/$alertId/edit'
+      preLoaderRoute: typeof AuthenticatedAlertsAlertIdEditRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAlertsNewRoute: typeof AuthenticatedAlertsNewRoute
   AuthenticatedDashboardDeviceIdRoute: typeof AuthenticatedDashboardDeviceIdRoute
+  AuthenticatedAlertsIndexRoute: typeof AuthenticatedAlertsIndexRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+  AuthenticatedAlertsAlertIdEditRoute: typeof AuthenticatedAlertsAlertIdEditRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAlertsNewRoute: AuthenticatedAlertsNewRoute,
   AuthenticatedDashboardDeviceIdRoute: AuthenticatedDashboardDeviceIdRoute,
+  AuthenticatedAlertsIndexRoute: AuthenticatedAlertsIndexRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+  AuthenticatedAlertsAlertIdEditRoute: AuthenticatedAlertsAlertIdEditRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

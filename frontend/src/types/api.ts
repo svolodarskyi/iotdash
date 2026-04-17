@@ -55,3 +55,40 @@ export interface LoginRequest {
 export interface LoginResponse {
   user: User
 }
+
+export interface Alert {
+  id: string
+  device_id: string
+  device_code: string
+  created_by: string | null
+  metric: string
+  condition: string
+  threshold: number
+  duration_seconds: number
+  notification_email: string | null
+  is_enabled: boolean
+  grafana_rule_uid: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AlertCreate {
+  device_id: string
+  metric: string
+  condition: string
+  threshold: number
+  duration_seconds: number
+  notification_email: string
+}
+
+export interface AlertUpdate {
+  metric?: string
+  condition?: string
+  threshold?: number
+  duration_seconds?: number
+  notification_email?: string
+}
+
+export interface AlertToggle {
+  is_enabled: boolean
+}

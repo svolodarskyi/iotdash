@@ -7,9 +7,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from unittest.mock import MagicMock
+
 from app.database import get_db
 from app.main import app
-from app.models import Base, Device, GrafanaDashboard, Organisation, User
+from app.models import Alert, Base, Device, GrafanaDashboard, Organisation, User
+from app.services.grafana_client import get_grafana_client
 
 # In-memory SQLite for tests — no external dependencies needed
 TEST_DATABASE_URL = "sqlite://"
@@ -38,7 +41,16 @@ def db():
 
 
 @pytest.fixture()
-def client(db):
+def mock_grafana():
+    """A MagicMock GrafanaClient used for all tests."""
+    mock = MagicMock()
+    mock.ensure_alerts_folder.return_value = "test-folder-uid"
+    mock.create_alert_rule.return_value = "test-rule-uid"
+    return mock
+
+
+@pytest.fixture()
+def client(db, mock_grafana):
     def override_get_db():
         try:
             yield db
@@ -46,6 +58,7 @@ def client(db):
             pass
 
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_grafana_client] = lambda: mock_grafana
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
@@ -183,6 +196,29 @@ def two_org_seed(db):
     db.add(dashboard_a)
     db.commit()
 
+    alert_a = Alert(
+        id=uuid.UUID("00000000-0000-0000-0000-0000000000a5"),
+        device_id=device_a.id,
+        created_by=user_a.id,
+        metric="temperature",
+        condition="above",
+        threshold=30.0,
+        duration_seconds=60,
+        notification_email="user_a@orga.com",
+    )
+    alert_b = Alert(
+        id=uuid.UUID("00000000-0000-0000-0000-0000000000b5"),
+        device_id=device_b.id,
+        created_by=user_b.id,
+        metric="temperature",
+        condition="above",
+        threshold=35.0,
+        duration_seconds=120,
+        notification_email="user_b@orgb.com",
+    )
+    db.add_all([alert_a, alert_b])
+    db.commit()
+
     return {
         "org_a": org_a,
         "org_b": org_b,
@@ -190,4 +226,6 @@ def two_org_seed(db):
         "user_b": user_b,
         "device_a": device_a,
         "device_b": device_b,
+        "alert_a": alert_a,
+        "alert_b": alert_b,
     }

@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     INFLUXDB_ORG: str = "iotorg"
     INFLUXDB_BUCKET: str = "iot"
     GRAFANA_URL: str = "http://grafana:3000"
+    GRAFANA_ADMIN_USER: str = "admin"
+    GRAFANA_ADMIN_PASSWORD: str = "admin"
 
     JWT_SECRET_KEY: str = "dev-secret-change-in-production"
     JWT_ALGORITHM: str = "HS256"

@@ -69,3 +69,41 @@ class MeResponse(BaseModel):
     organisation_id: uuid.UUID
     organisation_name: str
     role: str
+
+
+# ── Alert ─────────────────────────────────────────────
+class AlertCreate(BaseModel):
+    device_id: uuid.UUID
+    metric: str
+    condition: str  # "above" | "below"
+    threshold: float
+    duration_seconds: int = 60
+    notification_email: str
+
+
+class AlertUpdate(BaseModel):
+    metric: str | None = None
+    condition: str | None = None
+    threshold: float | None = None
+    duration_seconds: int | None = None
+    notification_email: str | None = None
+
+
+class AlertToggle(BaseModel):
+    is_enabled: bool
+
+
+class AlertOut(BaseModel):
+    id: uuid.UUID
+    device_id: uuid.UUID
+    device_code: str
+    created_by: uuid.UUID | None = None
+    metric: str
+    condition: str
+    threshold: float
+    duration_seconds: int
+    notification_email: str | None = None
+    is_enabled: bool
+    grafana_rule_uid: str | None = None
+    created_at: datetime
+    updated_at: datetime
