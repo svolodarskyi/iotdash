@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, Uuid, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, Uuid, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import JSON
 
 # Cross-dialect types: use JSONB on PostgreSQL, plain JSON on SQLite (tests)
 JSONVariant = JSON().with_variant(JSONB(), "postgresql")
@@ -25,7 +26,7 @@ class Organisation(Base):
     )
 
     users: Mapped[list["User"]] = relationship(back_populates="organisation")
-    devices: Mapped[list["Device"]] = relationship(back_populates="organisation")
+    devices: Mapped[list["DeviceProvisioned"]] = relationship(back_populates="organisation")
     dashboards: Mapped[list["GrafanaDashboard"]] = relationship(back_populates="organisation")
 
 
@@ -49,8 +50,36 @@ class User(Base):
     organisation: Mapped["Organisation"] = relationship(back_populates="users")
 
 
-class Device(Base):
-    __tablename__ = "devices"
+class DeviceType(Base):
+    __tablename__ = "device_types"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    allowed_metrics: Mapped[list["DeviceTypeMetric"]] = relationship(
+        back_populates="device_type", cascade="all, delete-orphan"
+    )
+    devices: Mapped[list["DeviceProvisioned"]] = relationship(back_populates="device_type")
+
+
+class DeviceTypeMetric(Base):
+    __tablename__ = "device_type_metrics"
+    __table_args__ = (UniqueConstraint("device_type_id", "metric_id", name="uq_device_type_metric"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    device_type_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("device_types.id"), nullable=False
+    )
+    metric_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("metrics.id"), nullable=False)
+
+    device_type: Mapped["DeviceType"] = relationship(back_populates="allowed_metrics")
+    metric: Mapped["Metric"] = relationship(back_populates="device_type_metrics")
+
+
+class DeviceProvisioned(Base):
+    __tablename__ = "devices_provisioned"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     device_code: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
@@ -58,7 +87,9 @@ class Device(Base):
     organisation_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("organisations.id"), nullable=False
     )
-    device_type: Mapped[str] = mapped_column(String(100), nullable=False, default="sensor")
+    device_type_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("device_types.id"), nullable=False
+    )
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSONVariant, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -67,7 +98,9 @@ class Device(Base):
     )
 
     organisation: Mapped["Organisation"] = relationship(back_populates="devices")
+    device_type: Mapped["DeviceType"] = relationship(back_populates="devices")
     alerts: Mapped[list["Alert"]] = relationship(back_populates="device")
+    device_metrics: Mapped[list["DeviceProvisionedMetric"]] = relationship(back_populates="device")
 
 
 class GrafanaDashboard(Base):
@@ -94,7 +127,9 @@ class Alert(Base):
     __tablename__ = "alerts"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    device_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("devices.id"), nullable=False)
+    device_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("devices_provisioned.id"), nullable=False
+    )
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("users.id"), nullable=True
     )
@@ -110,4 +145,37 @@ class Alert(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    device: Mapped["Device"] = relationship(back_populates="alerts")
+    device: Mapped["DeviceProvisioned"] = relationship(back_populates="alerts")
+
+
+class Metric(Base):
+    __tablename__ = "metrics"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    data_type: Mapped[str] = mapped_column(String(50), nullable=False, default="float")
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    device_type_metrics: Mapped[list["DeviceTypeMetric"]] = relationship(back_populates="metric")
+    device_provisioned_metrics: Mapped[list["DeviceProvisionedMetric"]] = relationship(
+        back_populates="metric"
+    )
+
+
+class DeviceProvisionedMetric(Base):
+    __tablename__ = "device_provisioned_metrics"
+    __table_args__ = (UniqueConstraint("device_id", "metric_id", name="uq_device_provisioned_metric"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    device_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("devices_provisioned.id"), nullable=False
+    )
+    metric_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("metrics.id"), nullable=False)
+    is_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    enabled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    disabled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    device: Mapped["DeviceProvisioned"] = relationship(back_populates="device_metrics")
+    metric: Mapped["Metric"] = relationship(back_populates="device_provisioned_metrics")

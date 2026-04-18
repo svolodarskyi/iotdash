@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useDevices } from '../../../hooks/useDevices'
+import { useState, useEffect, useMemo } from 'react'
+import { useDevices, useDeviceMetrics } from '../../../hooks/useDevices'
+import { useAdminDevices, useAdminOrgs, useMetrics } from '../../../hooks/useAdmin'
 import { useCreateAlert } from '../../../hooks/useAlerts'
 import { useAuthStore } from '../../../store/authStore'
 
@@ -10,16 +11,61 @@ export const Route = createFileRoute('/_authenticated/alerts/new')({
 
 function NewAlert() {
   const navigate = useNavigate()
-  const { data: devices, isLoading: devicesLoading } = useDevices()
   const createAlert = useCreateAlert()
   const user = useAuthStore((s) => s.user)
+  const isAdmin = user?.role === 'admin'
 
+  // Admin filters
+  const [filterOrgId, setFilterOrgId] = useState('')
+  const [filterMetricName, setFilterMetricName] = useState('')
+  const { data: orgs } = useAdminOrgs()
+  const { data: allMetrics } = useMetrics()
+
+  // Device lists
+  const { data: viewerDevices, isLoading: viewerLoading } = useDevices()
+  const { data: adminDevices, isLoading: adminLoading } = useAdminDevices(
+    filterOrgId || undefined,
+    undefined,
+    filterMetricName || undefined,
+  )
+
+  const devices = isAdmin ? adminDevices : viewerDevices
+  const devicesLoading = isAdmin ? adminLoading : viewerLoading
+
+  // Form state
   const [deviceId, setDeviceId] = useState('')
-  const [metric, setMetric] = useState('temperature')
+  const [metric, setMetric] = useState('')
   const [condition, setCondition] = useState('above')
   const [threshold, setThreshold] = useState('30')
   const [durationSeconds, setDurationSeconds] = useState('60')
   const [email, setEmail] = useState(user?.email ?? '')
+
+  const { data: deviceMetrics } = useDeviceMetrics(deviceId || undefined)
+
+  // Reset device when filters change
+  useEffect(() => {
+    setDeviceId('')
+  }, [filterOrgId, filterMetricName])
+
+  // When device changes, reset metric to first available
+  useEffect(() => {
+    if (deviceMetrics?.length) {
+      setMetric(deviceMetrics[0].metric_name)
+    } else {
+      setMetric('')
+    }
+  }, [deviceMetrics])
+
+  // Group admin devices by org name for the dropdown
+  const groupedDevices = useMemo(() => {
+    if (!isAdmin || !adminDevices) return null
+    return adminDevices.reduce<Record<string, typeof adminDevices>>((acc, d) => {
+      const org = d.organisation_name
+      if (!acc[org]) acc[org] = []
+      acc[org].push(d)
+      return acc
+    }, {})
+  }, [isAdmin, adminDevices])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,6 +89,43 @@ function NewAlert() {
       <h2 className="text-2xl font-semibold text-gray-900 mb-6">New Alert</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {isAdmin && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Company
+              </label>
+              <select
+                value={filterOrgId}
+                onChange={(e) => setFilterOrgId(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              >
+                <option value="">All companies</option>
+                {orgs?.map((o) => (
+                  <option key={o.id} value={o.id}>{o.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Metric Type
+              </label>
+              <select
+                value={filterMetricName}
+                onChange={(e) => setFilterMetricName(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              >
+                <option value="">All metrics</option>
+                {allMetrics?.map((m) => (
+                  <option key={m.id} value={m.name}>
+                    {m.name}{m.unit ? ` (${m.unit})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Device
@@ -57,11 +140,21 @@ function NewAlert() {
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
             >
               <option value="">Select a device</option>
-              {devices?.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name} ({d.device_code})
-                </option>
-              ))}
+              {isAdmin && groupedDevices
+                ? Object.entries(groupedDevices).map(([orgName, orgDevices]) => (
+                    <optgroup key={orgName} label={orgName}>
+                      {orgDevices.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name} ({d.device_code})
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))
+                : devices?.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} ({d.device_code})
+                    </option>
+                  ))}
             </select>
           )}
         </div>
@@ -70,13 +163,27 @@ function NewAlert() {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Metric
           </label>
-          <select
-            value={metric}
-            onChange={(e) => setMetric(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-          >
-            <option value="temperature">Temperature</option>
-          </select>
+          {!deviceId ? (
+            <select disabled className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-400">
+              <option>Select a device first</option>
+            </select>
+          ) : !deviceMetrics?.length ? (
+            <select disabled className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-400">
+              <option>No metrics configured</option>
+            </select>
+          ) : (
+            <select
+              value={metric}
+              onChange={(e) => setMetric(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+            >
+              {deviceMetrics.map((dm) => (
+                <option key={dm.metric_id} value={dm.metric_name}>
+                  {dm.metric_name}{dm.metric_unit ? ` (${dm.metric_unit})` : ''}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -148,7 +255,7 @@ function NewAlert() {
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            disabled={createAlert.isPending}
+            disabled={createAlert.isPending || !metric}
             className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
           >
             {createAlert.isPending ? 'Creating...' : 'Create Alert'}

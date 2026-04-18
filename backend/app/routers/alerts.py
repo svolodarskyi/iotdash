@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
 from app.database import get_db
-from app.models import Alert, Device, User
+from app.models import Alert, DeviceProvisioned, DeviceProvisionedMetric, Metric, User
 from app.schemas import AlertCreate, AlertOut, AlertToggle, AlertUpdate
 from app.services.grafana_client import GrafanaClient, get_grafana_client
 
@@ -21,6 +21,7 @@ def _alert_to_out(alert: Alert) -> AlertOut:
         id=alert.id,
         device_id=alert.device_id,
         device_code=alert.device.device_code,
+        organisation_name=alert.device.organisation.name if alert.device.organisation else None,
         created_by=alert.created_by,
         metric=alert.metric,
         condition=alert.condition,
@@ -34,24 +35,35 @@ def _alert_to_out(alert: Alert) -> AlertOut:
     )
 
 
-def _get_org_alert(
+def _get_alert_for_user(
     alert_id: uuid.UUID,
     current_user: User,
     db: Session,
 ) -> Alert:
-    """Load an alert, ensuring it belongs to the user's org. Raises 404 otherwise."""
-    alert = (
-        db.query(Alert)
-        .join(Device)
-        .filter(
-            Alert.id == alert_id,
-            Device.organisation_id == current_user.organisation_id,
-        )
-        .first()
-    )
+    """Load an alert. Admins can access any alert; viewers only their org's."""
+    q = db.query(Alert).join(DeviceProvisioned).filter(Alert.id == alert_id)
+    if current_user.role != "admin":
+        q = q.filter(DeviceProvisioned.organisation_id == current_user.organisation_id)
+    alert = q.first()
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
     return alert
+
+
+def _validate_metric_on_device(db: Session, device_id: uuid.UUID, metric_name: str) -> None:
+    """Validate that the metric is enabled on the device."""
+    dm = (
+        db.query(DeviceProvisionedMetric)
+        .join(Metric)
+        .filter(
+            DeviceProvisionedMetric.device_id == device_id,
+            Metric.name == metric_name,
+            DeviceProvisionedMetric.is_enabled.is_(True),
+        )
+        .first()
+    )
+    if not dm:
+        raise HTTPException(status_code=400, detail=f"Metric '{metric_name}' not enabled on this device")
 
 
 @router.get("", response_model=list[AlertOut])
@@ -59,12 +71,10 @@ def list_alerts(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    alerts = (
-        db.query(Alert)
-        .join(Device)
-        .filter(Device.organisation_id == current_user.organisation_id)
-        .all()
-    )
+    q = db.query(Alert).join(DeviceProvisioned)
+    if current_user.role != "admin":
+        q = q.filter(DeviceProvisioned.organisation_id == current_user.organisation_id)
+    alerts = q.all()
     return [_alert_to_out(a) for a in alerts]
 
 
@@ -75,17 +85,16 @@ def create_alert(
     current_user: User = Depends(get_current_user),
     grafana: GrafanaClient = Depends(get_grafana_client),
 ):
-    # Verify device belongs to user's org
-    device = (
-        db.query(Device)
-        .filter(
-            Device.id == body.device_id,
-            Device.organisation_id == current_user.organisation_id,
-        )
-        .first()
-    )
+    # Verify device exists (admins can use any device; viewers only their org's)
+    q = db.query(DeviceProvisioned).filter(DeviceProvisioned.id == body.device_id)
+    if current_user.role != "admin":
+        q = q.filter(DeviceProvisioned.organisation_id == current_user.organisation_id)
+    device = q.first()
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
+
+    # Validate metric is enabled on device
+    _validate_metric_on_device(db, device.id, body.metric)
 
     alert = Alert(
         device_id=body.device_id,
@@ -122,7 +131,7 @@ def get_alert(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    alert = _get_org_alert(alert_id, current_user, db)
+    alert = _get_alert_for_user(alert_id, current_user, db)
     return _alert_to_out(alert)
 
 
@@ -134,9 +143,14 @@ def update_alert(
     current_user: User = Depends(get_current_user),
     grafana: GrafanaClient = Depends(get_grafana_client),
 ):
-    alert = _get_org_alert(alert_id, current_user, db)
+    alert = _get_alert_for_user(alert_id, current_user, db)
 
     update_data = body.model_dump(exclude_unset=True)
+
+    # Validate metric if being changed
+    if "metric" in update_data:
+        _validate_metric_on_device(db, alert.device_id, update_data["metric"])
+
     for field, value in update_data.items():
         setattr(alert, field, value)
 
@@ -171,7 +185,7 @@ def delete_alert(
     current_user: User = Depends(get_current_user),
     grafana: GrafanaClient = Depends(get_grafana_client),
 ):
-    alert = _get_org_alert(alert_id, current_user, db)
+    alert = _get_alert_for_user(alert_id, current_user, db)
 
     # Clean up Grafana resources
     if alert.grafana_rule_uid:
@@ -197,7 +211,7 @@ def toggle_alert(
     current_user: User = Depends(get_current_user),
     grafana: GrafanaClient = Depends(get_grafana_client),
 ):
-    alert = _get_org_alert(alert_id, current_user, db)
+    alert = _get_alert_for_user(alert_id, current_user, db)
     alert.is_enabled = body.is_enabled
 
     # Pause/unpause in Grafana — or create rule if missing

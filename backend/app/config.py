@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     GRAFANA_ADMIN_USER: str = "admin"
     GRAFANA_ADMIN_PASSWORD: str = "admin"
 
+    MQTT_BROKER_HOST: str = "emqx"
+    MQTT_BROKER_PORT: int = 1883
+
     JWT_SECRET_KEY: str = "dev-secret-change-in-production"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 1440  # 24 hours

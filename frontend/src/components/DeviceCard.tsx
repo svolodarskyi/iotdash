@@ -21,7 +21,7 @@ export function DeviceCard({ device }: { device: Device }) {
         </span>
       </div>
       <p className="text-sm text-gray-500">Code: {device.device_code}</p>
-      <p className="text-sm text-gray-500">Type: {device.device_type}</p>
+      <p className="text-sm text-gray-500">Type: {device.device_type_name}</p>
     </Link>
   )
 }

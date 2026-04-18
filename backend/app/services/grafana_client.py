@@ -13,7 +13,7 @@ import httpx
 from fastapi import HTTPException
 
 from app.config import settings
-from app.models import Alert, Device, Organisation
+from app.models import Alert, DeviceProvisioned, Organisation
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,94 @@ class GrafanaClient:
     ) -> dict | list | None:
         url = f"{self.base_url}{path}"
         headers = {"X-Disable-Provenance": "true"}
+        try:
+            resp = httpx.request(
+                method,
+                url,
+                auth=self.auth,
+                json=json,
+                headers=headers,
+                timeout=15.0,
+            )
+        except httpx.HTTPError as exc:
+            logger.error("Grafana request failed: %s %s — %s", method, path, exc)
+            raise HTTPException(status_code=502, detail=f"Grafana unreachable: {exc}")
+
+        if resp.status_code not in expected:
+            detail = resp.text[:500]
+            logger.error(
+                "Grafana API error: %s %s → %s %s",
+                method,
+                path,
+                resp.status_code,
+                detail,
+            )
+            raise HTTPException(
+                status_code=502,
+                detail=f"Grafana API error ({resp.status_code}): {detail}",
+            )
+
+        if resp.status_code == 204 or not resp.content:
+            return None
+        return resp.json()
+
+    # ── org provisioning ────────────────────────────────
+
+    def create_org(self, name: str) -> int:
+        """Create a Grafana organisation. Returns the Grafana org ID."""
+        result = self._request(
+            "POST",
+            "/api/orgs",
+            json={"name": name},
+            expected=(200,),
+        )
+        return result["orgId"]
+
+    def add_datasource_to_org(self, org_id: int) -> None:
+        """Create the InfluxDB datasource inside a Grafana org."""
+        from app.config import settings
+
+        ds_body = {
+            "name": "InfluxDB",
+            "type": "influxdb",
+            "access": "proxy",
+            "url": settings.INFLUXDB_URL,
+            "jsonData": {
+                "defaultBucket": settings.INFLUXDB_BUCKET,
+                "httpMode": "POST",
+                "organization": settings.INFLUXDB_ORG,
+                "version": "Flux",
+            },
+            "secureJsonData": {
+                "token": settings.INFLUXDB_TOKEN,
+            },
+        }
+        self._org_request("POST", "/api/datasources", org_id, json=ds_body, expected=(200,))
+
+    def create_dashboard_in_org(self, org_id: int, dashboard_json: dict) -> str:
+        """Create a dashboard inside a Grafana org. Returns the dashboard UID."""
+        body = {
+            "dashboard": dashboard_json,
+            "overwrite": True,
+        }
+        result = self._org_request("POST", "/api/dashboards/db", org_id, json=body, expected=(200,))
+        return result["uid"]
+
+    def _org_request(
+        self,
+        method: str,
+        path: str,
+        org_id: int,
+        *,
+        json: dict | list | None = None,
+        expected: tuple[int, ...] = (200,),
+    ) -> dict | list | None:
+        """Like _request but with X-Grafana-Org-Id header for org-scoped operations."""
+        url = f"{self.base_url}{path}"
+        headers = {
+            "X-Disable-Provenance": "true",
+            "X-Grafana-Org-Id": str(org_id),
+        }
         try:
             resp = httpx.request(
                 method,
@@ -110,7 +198,7 @@ class GrafanaClient:
     def _build_rule_body(
         self,
         alert: Alert,
-        device: Device,
+        device: DeviceProvisioned,
         org: Organisation,
         folder_uid: str,
         *,
@@ -201,7 +289,7 @@ class GrafanaClient:
     def create_alert_rule(
         self,
         alert: Alert,
-        device: Device,
+        device: DeviceProvisioned,
         org: Organisation,
         folder_uid: str,
     ) -> str:
@@ -219,7 +307,7 @@ class GrafanaClient:
         self,
         grafana_rule_uid: str,
         alert: Alert,
-        device: Device,
+        device: DeviceProvisioned,
         org: Organisation,
         folder_uid: str,
         *,

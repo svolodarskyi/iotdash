@@ -19,13 +19,45 @@ class OrganisationOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# ── Device Type ──────────────────────────────────────
+class DeviceTypeMetricOut(BaseModel):
+    metric_id: uuid.UUID
+    metric_name: str
+    metric_unit: str | None
+
+    model_config = {"from_attributes": True}
+
+
+class DeviceTypeOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    description: str | None
+    allowed_metrics: list[DeviceTypeMetricOut]
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class DeviceTypeCreate(BaseModel):
+    name: str
+    description: str | None = None
+    metric_ids: list[uuid.UUID] = []
+
+
+class DeviceTypeUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    metric_ids: list[uuid.UUID] | None = None
+
+
 # ── Device ────────────────────────────────────────────
 class DeviceOut(BaseModel):
     id: uuid.UUID
     device_code: str
     name: str
     organisation_id: uuid.UUID
-    device_type: str
+    device_type_id: uuid.UUID
+    device_type_name: str
     metadata_: dict | None = None
     is_active: bool
     created_at: datetime
@@ -71,6 +103,94 @@ class MeResponse(BaseModel):
     role: str
 
 
+# ── Metrics ──────────────────────────────────────────
+class MetricOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    unit: str | None
+    data_type: str
+    description: str | None
+
+    model_config = {"from_attributes": True}
+
+
+class DeviceMetricOut(BaseModel):
+    metric_id: uuid.UUID
+    metric_name: str
+    metric_unit: str | None
+    is_enabled: bool
+    enabled_at: datetime
+    disabled_at: datetime | None
+
+    model_config = {"from_attributes": True}
+
+
+# ── Admin — Organisations ────────────────────────────
+class OrgCreate(BaseModel):
+    name: str
+
+
+class OrgUpdate(BaseModel):
+    name: str | None = None
+
+
+# ── Admin — Users ────────────────────────────────────
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    full_name: str
+    organisation_id: uuid.UUID
+
+
+class UserUpdate(BaseModel):
+    email: str | None = None
+    full_name: str | None = None
+    is_active: bool | None = None
+
+
+# ── Admin — Devices ──────────────────────────────────
+class DeviceCreate(BaseModel):
+    device_code: str | None = None
+    name: str
+    organisation_id: uuid.UUID
+    device_type_id: uuid.UUID
+    metric_ids: list[uuid.UUID] = []
+    auto_enable: bool = False
+
+
+class DeviceUpdate(BaseModel):
+    name: str | None = None
+    device_type_id: uuid.UUID | None = None
+    is_active: bool | None = None
+
+
+class DeviceAdminOut(BaseModel):
+    id: uuid.UUID
+    device_code: str
+    name: str
+    organisation_id: uuid.UUID
+    organisation_name: str
+    device_type_id: uuid.UUID
+    device_type_name: str
+    is_active: bool
+    metrics: list[DeviceMetricOut]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class DeviceMetricUpdate(BaseModel):
+    metric_ids: list[uuid.UUID]
+    send_config: bool = False
+
+
+class DeviceSendConfigResponse(BaseModel):
+    device_code: str
+    metrics_sent: list[str]
+    success: bool
+
+
 # ── Alert ─────────────────────────────────────────────
 class AlertCreate(BaseModel):
     device_id: uuid.UUID
@@ -97,6 +217,7 @@ class AlertOut(BaseModel):
     id: uuid.UUID
     device_id: uuid.UUID
     device_code: str
+    organisation_name: str | None = None
     created_by: uuid.UUID | None = None
     metric: str
     condition: str

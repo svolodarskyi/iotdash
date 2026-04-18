@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useAlert, useUpdateAlert } from '../../../hooks/useAlerts'
+import { useDeviceMetrics } from '../../../hooks/useDevices'
 
 export const Route = createFileRoute('/_authenticated/alerts/$alertId/edit')({
   component: EditAlert,
@@ -18,6 +19,8 @@ function EditAlert() {
   const [durationSeconds, setDurationSeconds] = useState('')
   const [email, setEmail] = useState('')
   const [initialized, setInitialized] = useState(false)
+
+  const { data: deviceMetrics } = useDeviceMetrics(alert?.device_id)
 
   useEffect(() => {
     if (alert && !initialized) {
@@ -81,13 +84,27 @@ function EditAlert() {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Metric
           </label>
-          <select
-            value={metric}
-            onChange={(e) => setMetric(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-          >
-            <option value="temperature">Temperature</option>
-          </select>
+          {deviceMetrics?.length ? (
+            <select
+              value={metric}
+              onChange={(e) => setMetric(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+            >
+              {deviceMetrics.map((dm) => (
+                <option key={dm.metric_id} value={dm.metric_name}>
+                  {dm.metric_name}{dm.metric_unit ? ` (${dm.metric_unit})` : ''}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <select
+              value={metric}
+              onChange={(e) => setMetric(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+            >
+              <option value={alert.metric}>{alert.metric}</option>
+            </select>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">

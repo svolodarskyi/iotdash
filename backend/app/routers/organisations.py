@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
 from app.database import get_db
-from app.models import Device, Organisation, User
+from app.models import DeviceProvisioned, Organisation, User
 from app.schemas import DeviceOut, OrganisationOut
 
 router = APIRouter(prefix="/api/organisations", tags=["organisations"])
@@ -48,4 +48,23 @@ def list_org_devices(
     org = db.query(Organisation).filter(Organisation.id == org_id).first()
     if not org:
         raise HTTPException(status_code=404, detail="Organisation not found")
-    return db.query(Device).filter(Device.organisation_id == org_id).all()
+    devices = (
+        db.query(DeviceProvisioned)
+        .filter(DeviceProvisioned.organisation_id == org_id)
+        .all()
+    )
+    return [
+        DeviceOut(
+            id=d.id,
+            device_code=d.device_code,
+            name=d.name,
+            organisation_id=d.organisation_id,
+            device_type_id=d.device_type_id,
+            device_type_name=d.device_type.name,
+            metadata_=d.metadata_,
+            is_active=d.is_active,
+            created_at=d.created_at,
+            updated_at=d.updated_at,
+        )
+        for d in devices
+    ]

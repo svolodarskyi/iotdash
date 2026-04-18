@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useAlerts, useDeleteAlert, useToggleAlert } from '../../../hooks/useAlerts'
+import { useAuthStore } from '../../../store/authStore'
 import { useState } from 'react'
 
 export const Route = createFileRoute('/_authenticated/alerts/')({
@@ -11,6 +12,8 @@ function AlertsIndex() {
   const toggleAlert = useToggleAlert()
   const deleteAlert = useDeleteAlert()
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const user = useAuthStore((s) => s.user)
+  const isAdmin = user?.role === 'admin'
 
   if (isLoading) {
     return <p className="text-gray-500">Loading alerts...</p>
@@ -52,14 +55,20 @@ function AlertsIndex() {
 
       {!alerts?.length ? (
         <p className="text-gray-500">
-          No alerts configured. Create one to get notified when device metrics
-          exceed thresholds.
+          {isAdmin
+            ? 'No alerts configured across any organisation.'
+            : 'No alerts configured. Create one to get notified when device metrics exceed thresholds.'}
         </p>
       ) : (
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                {isAdmin && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Organisation
+                  </th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Device
                 </th>
@@ -83,6 +92,11 @@ function AlertsIndex() {
             <tbody className="bg-white divide-y divide-gray-200">
               {alerts.map((alert) => (
                 <tr key={alert.id}>
+                  {isAdmin && (
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {alert.organisation_name}
+                    </td>
+                  )}
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {alert.device_code}
                   </td>

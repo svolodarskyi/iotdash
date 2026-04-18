@@ -12,10 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedAlertsIndexRouteImport } from './routes/_authenticated/alerts/index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedDashboardDeviceIdRouteImport } from './routes/_authenticated/dashboard/$deviceId'
 import { Route as AuthenticatedAlertsNewRouteImport } from './routes/_authenticated/alerts/new'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
+import { Route as AuthenticatedAdminOrganisationsRouteImport } from './routes/_authenticated/admin/organisations'
+import { Route as AuthenticatedAdminDevicesRouteImport } from './routes/_authenticated/admin/devices'
 import { Route as AuthenticatedAlertsAlertIdEditRouteImport } from './routes/_authenticated/alerts/$alertId.edit'
 
 const LoginRoute = LoginRouteImport.update({
@@ -32,6 +37,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDashboardIndexRoute =
   AuthenticatedDashboardIndexRouteImport.update({
     id: '/dashboard/',
@@ -44,6 +54,11 @@ const AuthenticatedAlertsIndexRoute =
     path: '/alerts/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedDashboardDeviceIdRoute =
   AuthenticatedDashboardDeviceIdRouteImport.update({
     id: '/dashboard/$deviceId',
@@ -55,6 +70,23 @@ const AuthenticatedAlertsNewRoute = AuthenticatedAlertsNewRouteImport.update({
   path: '/alerts/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminOrganisationsRoute =
+  AuthenticatedAdminOrganisationsRouteImport.update({
+    id: '/organisations',
+    path: '/organisations',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminDevicesRoute =
+  AuthenticatedAdminDevicesRouteImport.update({
+    id: '/devices',
+    path: '/devices',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAlertsAlertIdEditRoute =
   AuthenticatedAlertsAlertIdEditRouteImport.update({
     id: '/alerts/$alertId/edit',
@@ -65,8 +97,13 @@ const AuthenticatedAlertsAlertIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/admin/devices': typeof AuthenticatedAdminDevicesRoute
+  '/admin/organisations': typeof AuthenticatedAdminOrganisationsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/alerts/new': typeof AuthenticatedAlertsNewRoute
   '/dashboard/$deviceId': typeof AuthenticatedDashboardDeviceIdRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/alerts/': typeof AuthenticatedAlertsIndexRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/alerts/$alertId/edit': typeof AuthenticatedAlertsAlertIdEditRoute
@@ -74,8 +111,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/admin/devices': typeof AuthenticatedAdminDevicesRoute
+  '/admin/organisations': typeof AuthenticatedAdminOrganisationsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/alerts/new': typeof AuthenticatedAlertsNewRoute
   '/dashboard/$deviceId': typeof AuthenticatedDashboardDeviceIdRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/alerts': typeof AuthenticatedAlertsIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/alerts/$alertId/edit': typeof AuthenticatedAlertsAlertIdEditRoute
@@ -85,8 +126,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/admin/devices': typeof AuthenticatedAdminDevicesRoute
+  '/_authenticated/admin/organisations': typeof AuthenticatedAdminOrganisationsRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/alerts/new': typeof AuthenticatedAlertsNewRoute
   '/_authenticated/dashboard/$deviceId': typeof AuthenticatedDashboardDeviceIdRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/alerts/': typeof AuthenticatedAlertsIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/alerts/$alertId/edit': typeof AuthenticatedAlertsAlertIdEditRoute
@@ -96,8 +142,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/admin'
+    | '/admin/devices'
+    | '/admin/organisations'
+    | '/admin/users'
     | '/alerts/new'
     | '/dashboard/$deviceId'
+    | '/admin/'
     | '/alerts/'
     | '/dashboard/'
     | '/alerts/$alertId/edit'
@@ -105,8 +156,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/admin/devices'
+    | '/admin/organisations'
+    | '/admin/users'
     | '/alerts/new'
     | '/dashboard/$deviceId'
+    | '/admin'
     | '/alerts'
     | '/dashboard'
     | '/alerts/$alertId/edit'
@@ -115,8 +170,13 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/admin'
+    | '/_authenticated/admin/devices'
+    | '/_authenticated/admin/organisations'
+    | '/_authenticated/admin/users'
     | '/_authenticated/alerts/new'
     | '/_authenticated/dashboard/$deviceId'
+    | '/_authenticated/admin/'
     | '/_authenticated/alerts/'
     | '/_authenticated/dashboard/'
     | '/_authenticated/alerts/$alertId/edit'
@@ -151,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard/': {
       id: '/_authenticated/dashboard/'
       path: '/dashboard'
@@ -164,6 +231,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/alerts/'
       preLoaderRoute: typeof AuthenticatedAlertsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/dashboard/$deviceId': {
       id: '/_authenticated/dashboard/$deviceId'
@@ -179,6 +253,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAlertsNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/organisations': {
+      id: '/_authenticated/admin/organisations'
+      path: '/organisations'
+      fullPath: '/admin/organisations'
+      preLoaderRoute: typeof AuthenticatedAdminOrganisationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/devices': {
+      id: '/_authenticated/admin/devices'
+      path: '/devices'
+      fullPath: '/admin/devices'
+      preLoaderRoute: typeof AuthenticatedAdminDevicesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/alerts/$alertId/edit': {
       id: '/_authenticated/alerts/$alertId/edit'
       path: '/alerts/$alertId/edit'
@@ -189,7 +284,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminDevicesRoute: typeof AuthenticatedAdminDevicesRoute
+  AuthenticatedAdminOrganisationsRoute: typeof AuthenticatedAdminOrganisationsRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminDevicesRoute: AuthenticatedAdminDevicesRoute,
+  AuthenticatedAdminOrganisationsRoute: AuthenticatedAdminOrganisationsRoute,
+  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAlertsNewRoute: typeof AuthenticatedAlertsNewRoute
   AuthenticatedDashboardDeviceIdRoute: typeof AuthenticatedDashboardDeviceIdRoute
   AuthenticatedAlertsIndexRoute: typeof AuthenticatedAlertsIndexRoute
@@ -198,6 +311,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAlertsNewRoute: AuthenticatedAlertsNewRoute,
   AuthenticatedDashboardDeviceIdRoute: AuthenticatedDashboardDeviceIdRoute,
   AuthenticatedAlertsIndexRoute: AuthenticatedAlertsIndexRoute,

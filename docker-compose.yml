@@ -72,7 +72,7 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
-      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/temperature.json
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/iot-metrics.json
       GF_SECURITY_ALLOW_EMBEDDING: "true"
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_NAME: "Main Org."
@@ -127,6 +127,8 @@ services:
       GRAFANA_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GRAFANA_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-change-in-production}
+      MQTT_BROKER_HOST: ${MQTT_BROKER_HOST:-emqx}
+      MQTT_BROKER_PORT: ${MQTT_BROKER_PORT:-1883}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     depends_on:
       postgres:

@@ -37,8 +37,9 @@ def test_get_device_embed_urls(auth_client, seed_data):
     assert response.status_code == 200
     data = response.json()
     assert data["device_code"] == "test_sensor01"
-    assert len(data["urls"]) == 2  # 2 panel_ids in test dashboard
+    assert len(data["urls"]) == 1  # 1 enabled metric (temperature)
     assert "var-device_id=test_sensor01" in data["urls"][0]["url"]
+    assert "var-metric=temperature" in data["urls"][0]["url"]
 
 
 def test_get_device_embed_urls_not_found(auth_client):
