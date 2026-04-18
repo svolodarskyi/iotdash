@@ -4,6 +4,7 @@ resource "azurerm_public_ip" "soak" {
   resource_group_name = azurerm_resource_group.soak.name
   allocation_method   = "Dynamic"
   sku                 = "Basic"
+  domain_name_label   = var.dns_label
 }
 
 resource "azurerm_network_security_group" "soak" {

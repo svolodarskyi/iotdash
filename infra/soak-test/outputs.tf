@@ -3,9 +3,14 @@ output "vm_public_ip" {
   value       = azurerm_linux_virtual_machine.soak.public_ip_address
 }
 
+output "vm_fqdn" {
+  description = "DNS hostname of the soak test VM"
+  value       = azurerm_public_ip.soak.fqdn
+}
+
 output "ssh_command" {
   description = "SSH command to connect to the soak test VM"
-  value       = "ssh ${var.admin_username}@${azurerm_linux_virtual_machine.soak.public_ip_address}"
+  value       = "ssh ${var.admin_username}@${azurerm_public_ip.soak.fqdn}"
 }
 
 output "grafana_url" {
