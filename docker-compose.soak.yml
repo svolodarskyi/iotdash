@@ -1,7 +1,6 @@
 # Soak test overrides — 1000 devices @ 5s intervals (~200 msg/s)
 # Usage: docker compose -f docker-compose.yml -f docker-compose.soak.yml up -d
 
-
 services:
 
   emqx:
