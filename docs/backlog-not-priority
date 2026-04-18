@@ -1,5 +1,6 @@
 if i deploy now and destroy, how to redeploy. need step by cte[]
 soak test said that we have dynamic address.. so if i redeploy then it will be using different ip i need to provide new to iot devices?
+deployment is not secure??? when i read 5173 from webbrouser
 COST CONTROL IN AZURE
 test alerting
 demo to partner. how to onboarda company, how tio add alers, how to add devices, how chnaging metrics changign the graphs.. how t oadd more graphs.. create scenario. provisioned device has 3 metrics but then we add on device type one more metrics. how that metrics will appear in metrics config and hwo quickly we can send to device and receve show on teh graphs..
