@@ -27,6 +27,22 @@ runcmd:
   - curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
   - chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
+  # Configure Docker log rotation to prevent disk fill
+  - |
+    cat > /etc/docker/daemon.json <<'EOF'
+    {
+      "log-driver": "json-file",
+      "log-opts": {
+        "max-size": "50m",
+        "max-file": "3"
+      }
+    }
+    EOF
+  - systemctl restart docker
+
+  # Log into ACR
+  - docker login ${acr_login_server} -u ${acr_username} -p '${acr_password}'
+
   # Clone repo
   - git clone --branch ${github_branch} ${github_repo} /opt/iotdash
   - chown -R azureuser:azureuser /opt/iotdash
@@ -38,7 +54,7 @@ runcmd:
   - python3 -m venv /opt/iotdash/.venv
   - /opt/iotdash/.venv/bin/pip install aiomqtt
 
-  # Start the simulator in a tmux/screen-less background process
+  # Start the simulator as a systemd service
   - |
     cat > /etc/systemd/system/soak-simulator.service <<'EOF'
     [Unit]
@@ -79,17 +95,3 @@ runcmd:
       --retention 336h \
       --org iotorg \
       --token mytoken123 || true
-
-  # Configure Docker log rotation to prevent disk fill
-  - |
-    cat > /etc/docker/daemon.json <<'EOF'
-    {
-      "log-driver": "json-file",
-      "log-opts": {
-        "max-size": "50m",
-        "max-file": "3"
-      }
-    }
-    EOF
-  - systemctl restart docker
-  - cd /opt/iotdash && docker compose -f docker-compose.yml -f docker-compose.soak.yml up -d

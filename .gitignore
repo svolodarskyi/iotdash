@@ -22,6 +22,18 @@ env/
 # Environment
 .env
 
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+*.auto.tfvars
+
+# SSH keys
+*.pem
+infra/soak-test/*.key
+
 # Docker
 *.log
 
@@ -43,6 +55,5 @@ frontend/dist/
 *.tsbuildinfo
 
 .claude
-docs
 
 PLAN.MD

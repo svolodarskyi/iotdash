@@ -1,0 +1,148 @@
+# Sprint 1 Week 3 — Frontend Scaffold + Embed
+
+## Context
+
+Sprint 0 delivered a working backend (FastAPI + PostgreSQL + Alembic) with read-only API endpoints for devices, organisations, and Grafana embed URLs. The full IoT pipeline (EMQX → Telegraf → InfluxDB → Grafana) runs in Docker. Week 3 adds the first user-facing frontend: a React app that lists devices and embeds Grafana panels per device. No auth yet — everyone sees everything.
+
+---
+
+## Key Decisions
+
+**Grafana URL rewrite:** Backend returns `http://grafana:3000/...` (Docker-internal). Frontend rewrites to `http://localhost:3000/...` (browser-accessible) using `VITE_GRAFANA_URL` env var. One `rewriteGrafanaUrl()` utility in `src/lib/api.ts`. Production-ready — just swap the env var.
+
+**Iframe refresh:** Grafana handles its own auto-refresh via `&refresh=5s` appended by the `GrafanaEmbed` component. A "Refresh Panels" button on the device page forces iframe reload by toggling a React key.
+
+**node_modules in Docker:** Named volume `frontend_node_modules:/app/node_modules` prevents host mount from clobbering container deps.
+
+---
+
+## Step 1: Scaffold Vite + React project
+
+```bash
+cd frontend
+npm create vite@latest . -- --template react-ts
+npm install @tanstack/react-router @tanstack/react-query zustand
+npm install -D @tanstack/router-plugin tailwindcss @tailwindcss/vite
+npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom
+```
+
+## Step 2: Create `frontend/Dockerfile`
+
+- `node:20-alpine`, WORKDIR `/app`
+- `npm ci`, EXPOSE 5173
+- CMD: `npm run dev -- --host 0.0.0.0`
+
+## Step 3: Add frontend service to `docker-compose.yml`
+
+- Build from `./frontend`, port 5173:5173
+- Volumes: `./frontend:/app` + named `frontend_node_modules:/app/node_modules`
+- Env: `VITE_API_URL=http://localhost:8000`, `VITE_GRAFANA_URL=http://localhost:3000`
+- Depends on: backend
+- Add `frontend_node_modules:` to volumes section
+
+## Step 4: Configure Vite + Tailwind
+
+`vite.config.ts` with plugins: `TanStackRouterVite()`, `react()`, `tailwindcss()`
+Server host `0.0.0.0`, port 5173. Vitest config with jsdom environment.
+
+`src/index.css`: `@import "tailwindcss";`
+
+## Step 5: Create source files
+
+### File structure
+```
+frontend/src/
+├── main.tsx                          # Entry: QueryClient + Router
+├── index.css                         # Tailwind import
+├── types/api.ts                      # TS interfaces matching backend schemas
+├── lib/api.ts                        # apiFetch + rewriteGrafanaUrl
+├── hooks/
+│   ├── useDevices.ts                 # useQuery(['devices'])
+│   ├── useDevice.ts                  # useQuery(['devices', id])
+│   └── useDeviceEmbedUrls.ts         # useQuery(['devices', id, 'embed-urls'])
+├── store/authStore.ts                # Zustand placeholder (empty, for Week 4)
+├── components/
+│   ├── Layout.tsx                    # Shell: header + main
+│   ├── DeviceCard.tsx                # Device list card
+│   └── GrafanaEmbed.tsx              # iframe wrapper, appends &refresh=5s&from=now-1h&to=now&theme=light
+├── routes/
+│   ├── __root.tsx                    # Root layout with <Layout><Outlet/></Layout>
+│   ├── index.tsx                     # Redirect / → /dashboard
+│   └── dashboard/
+│       ├── index.tsx                 # Device list page
+│       └── $deviceId.tsx             # Device detail + embedded panels
+└── __tests__/
+    ├── setup.ts                      # @testing-library/jest-dom import
+    └── api.test.ts                   # rewriteGrafanaUrl tests
+```
+
+### Key patterns
+- `api.ts`: `apiFetch<T>(path)` wrapper + `rewriteGrafanaUrl(url)` replacing `http://grafana:3000` with `VITE_GRAFANA_URL`
+- Hooks: thin wrappers around `useQuery` calling `apiFetch`
+- `GrafanaEmbed`: appends `&from=now-1h&to=now&refresh=5s&theme=light` to embed URL
+- Device detail page: "Refresh Panels" button increments a `refreshKey` state, changing iframe `key` props to force remount
+
+## Step 6: Update project-level files
+
+- `.env.example` — add `VITE_API_URL`, `VITE_GRAFANA_URL`
+- `.gitignore` — add `frontend/dist/`, `*.tsbuildinfo`
+
+## Step 7: Tests
+
+- `src/__tests__/api.test.ts` — test `rewriteGrafanaUrl` rewrites correctly, preserves non-matching URLs
+- Run via: `docker compose exec frontend npm test`
+
+## Step 8: Documentation
+
+- `docs/SPRINT-1-WEEK3-MANUAL-QA.md` — step-by-step QA checklist (7 services up, frontend loads, device list, iframe embed, fake device data visible, refresh button, hot-reload)
+- `docs/SPRINT-1-WEEK3-DECISIONS.md` — Grafana URL rewrite, Docker node_modules volume, refresh strategy, Tailwind via Vite plugin, Zustand placeholder
+- `docs/SPRINT-1-WEEK3-FEATURES.md` — accomplished features, business value, gaps remaining (auth, admin panel)
+
+---
+
+## Files Created
+- `frontend/Dockerfile`
+- `frontend/package.json` (via npm create vite)
+- `frontend/vite.config.ts`
+- `frontend/index.html`
+- `frontend/tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`
+- `frontend/src/index.css`
+- `frontend/src/main.tsx`
+- `frontend/src/types/api.ts`
+- `frontend/src/lib/api.ts`
+- `frontend/src/hooks/useDevices.ts`
+- `frontend/src/hooks/useDevice.ts`
+- `frontend/src/hooks/useDeviceEmbedUrls.ts`
+- `frontend/src/store/authStore.ts`
+- `frontend/src/components/Layout.tsx`
+- `frontend/src/components/DeviceCard.tsx`
+- `frontend/src/components/GrafanaEmbed.tsx`
+- `frontend/src/routes/__root.tsx`
+- `frontend/src/routes/index.tsx`
+- `frontend/src/routes/dashboard/index.tsx`
+- `frontend/src/routes/dashboard/$deviceId.tsx`
+- `frontend/src/__tests__/setup.ts`
+- `frontend/src/__tests__/api.test.ts`
+- `docs/SPRINT-1-WEEK3-MANUAL-QA.md`
+- `docs/SPRINT-1-WEEK3-DECISIONS.md`
+- `docs/SPRINT-1-WEEK3-FEATURES.md`
+
+## Files Modified
+- `docker-compose.yml` — add frontend service + frontend_node_modules volume
+- `.env.example` — add VITE_API_URL, VITE_GRAFANA_URL
+- `.gitignore` — add frontend build artifacts
+
+## Not Modified
+- Backend code — no changes needed (API already returns what frontend needs)
+
+---
+
+## Verification
+
+1. `docker compose up --build -d` — 7 services start (emqx, telegraf, influxdb, grafana, postgres, backend, **frontend**)
+2. `http://localhost:5173` — redirects to `/dashboard`, shows device list (sensor01, sensor02)
+3. Click device → `/dashboard/{id}` — shows 3 Grafana panels embedded in iframes
+4. `python fake_device.py` — live data appears in embedded panels
+5. Click "Refresh Panels" — iframes reload
+6. `docker compose exec frontend npm test` — tests pass
+7. Edit a component → browser hot-reloads

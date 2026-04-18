@@ -27,3 +27,19 @@ output "resource_group" {
   description = "Resource group name (for teardown)"
   value       = azurerm_resource_group.soak.name
 }
+
+output "acr_login_server" {
+  description = "ACR login server URL"
+  value       = azurerm_container_registry.soak.login_server
+}
+
+output "acr_admin_username" {
+  description = "ACR admin username"
+  value       = azurerm_container_registry.soak.admin_username
+}
+
+output "acr_admin_password" {
+  description = "ACR admin password"
+  value       = azurerm_container_registry.soak.admin_password
+  sensitive   = true
+}

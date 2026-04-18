@@ -37,3 +37,16 @@ resource "azurerm_subnet" "soak" {
   virtual_network_name = azurerm_virtual_network.soak.name
   address_prefixes     = ["10.0.1.0/24"]
 }
+
+resource "azurerm_container_registry" "soak" {
+  name                = var.acr_name
+  resource_group_name = azurerm_resource_group.soak.name
+  location            = azurerm_resource_group.soak.location
+  sku                 = "Basic"
+  admin_enabled       = true
+
+  tags = {
+    environment = "soak-test"
+    project     = "iotdash"
+  }
+}

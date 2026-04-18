@@ -1,0 +1,53 @@
+hardware type....
+
+how many devices for a company : range
+what is the tech stack setup and how its is managed.
+
+what is the workflow in the company: how user requests accesspted, if variables are not setup by user, what is?
+
+do users have control over divice.?
+
+startlink modem...
+with docker container
+
+protocols which not everyone
+
+modbus canbus
+not everyonce
+
+not fro msensors but directly
+
+tcp stack... connect to router....
+hub server - wired... wan port from modem...
+
+accept for configuration... all on... then nagruzka na battery is too much...
+automate message..
+
+boolean.. send to device..
+boolean temp:true, humility:false.
+
+humidilty false - dashboard not showing..
+
+preconfigure with minimal. default... 3 (total 5).
+send sygnal or not.
+
+all devices have 5 metrics... device #2 add 6th metrics: based on proshivka.
+
+activate, not activated...
+
+can be actuators...
+
+modbus.... actuator connected to a hub...
+
+tcp protocols
+
+ethernet
+
+videostream. smart cameras...
+
+ai/ml what kind they do 
+
+
+
+Future enhancement.
+Devices search/dropdown . Do users name them or how distinguish one from another…

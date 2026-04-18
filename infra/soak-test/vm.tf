@@ -111,11 +111,14 @@ resource "azurerm_linux_virtual_machine" "soak" {
   network_interface_ids = [azurerm_network_interface.soak.id]
 
   custom_data = base64encode(templatefile("${path.module}/cloud-init.yaml", {
-    github_repo      = var.github_repo
-    github_branch    = var.github_branch
-    device_count     = var.device_count
-    publish_interval = var.publish_interval
+    github_repo       = var.github_repo
+    github_branch     = var.github_branch
+    device_count      = var.device_count
+    publish_interval  = var.publish_interval
     alert_webhook_url = var.alert_webhook_url
+    acr_login_server  = azurerm_container_registry.soak.login_server
+    acr_username      = azurerm_container_registry.soak.admin_username
+    acr_password      = azurerm_container_registry.soak.admin_password
   }))
 
   admin_ssh_key {

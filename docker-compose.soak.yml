@@ -51,7 +51,7 @@ services:
     restart: always
 
   backend:
-    image: ghcr.io/erfolg/iotdash-backend:latest
+    image: ${ACR_LOGIN_SERVER:-criotdashsoak.azurecr.io}/iotdash-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
@@ -69,7 +69,7 @@ services:
       - disabled  # Don't start mailhog in soak test
 
   frontend:
-    image: ghcr.io/erfolg/iotdash-frontend:latest
+    image: ${ACR_LOGIN_SERVER:-criotdashsoak.azurecr.io}/iotdash-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod

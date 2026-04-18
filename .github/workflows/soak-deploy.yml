@@ -17,28 +17,25 @@ on:
         default: "5"
 
 env:
-  REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/iotdash-backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/iotdash-frontend
+  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+  BACKEND_IMAGE: ${{ secrets.ACR_LOGIN_SERVER }}/iotdash-backend
+  FRONTEND_IMAGE: ${{ secrets.ACR_LOGIN_SERVER }}/iotdash-frontend
 
 jobs:
   build-and-push:
     name: Build & Push Images
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Log in to GHCR
+      - name: Log in to ACR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -92,14 +89,15 @@ jobs:
             git fetch origin
             git reset --hard origin/${{ github.ref_name }}
 
-            # Pull new images
+            # Log into ACR and pull new images
+            docker login ${{ secrets.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} -p '${{ secrets.ACR_PASSWORD }}'
             docker pull ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
             docker pull ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
             docker tag ${{ env.BACKEND_IMAGE }}:${{ github.sha }} ${{ env.BACKEND_IMAGE }}:latest
             docker tag ${{ env.FRONTEND_IMAGE }}:${{ github.sha }} ${{ env.FRONTEND_IMAGE }}:latest
 
             # Restart the stack
-            docker compose -f docker-compose.yml -f docker-compose.soak.yml up -d
+            ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }} docker compose -f docker-compose.yml -f docker-compose.soak.yml up -d
 
             # Restart the simulator with new settings
             sudo systemctl restart soak-simulator

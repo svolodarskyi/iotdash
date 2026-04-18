@@ -38,10 +38,16 @@ variable "allowed_ssh_cidr" {
   type        = string
 }
 
+variable "acr_name" {
+  description = "Azure Container Registry name (globally unique, alphanumeric only)"
+  type        = string
+  default     = "criotdashsoak"
+}
+
 variable "github_repo" {
   description = "GitHub repository URL to clone on the VM"
   type        = string
-  default     = "https://github.com/erfolg/iotdash.git"
+  default     = "https://github.com/svolodarskyi/iotdash.git"
 }
 
 variable "github_branch" {

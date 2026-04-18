@@ -2,18 +2,21 @@
 location = "westeurope"
 
 # VM configuration
-vm_size       = "Standard_D2s_v5"  # 2 vCPU, 8 GB RAM, no CPU credit throttling
+vm_size         = "Standard_D2s_v5"  # 2 vCPU, 8 GB RAM, no CPU credit throttling
 os_disk_size_gb = 128
 
 # SSH access — replace with your public key
 admin_username       = "azureuser"
-admin_ssh_public_key = "ssh-rsa AAAA... your-key-here"
+admin_ssh_public_key = "ssh-ed25519 AAAA... your-key-here"
 
 # Restrict access to your IP (run: curl -4 ifconfig.me)
 allowed_ssh_cidr = "YOUR_IP/32"
 
+# Azure Container Registry (globally unique, alphanumeric only)
+acr_name = "criotdashsoak"
+
 # Repository
-github_repo   = "https://github.com/erfolg/iotdash.git"
+github_repo   = "https://github.com/svolodarskyi/iotdash.git"
 github_branch = "main"
 
 # Soak test parameters
