@@ -55,6 +55,7 @@ frontend/dist/
 *.tsbuildinfo
 
 docs
+
 .claude
 
 PLAN.MD
