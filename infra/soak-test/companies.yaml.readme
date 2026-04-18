@@ -1,0 +1,11 @@
+Got it — YAML config file for org/device layout, provisioning via the backend API. I'll build it when you're ready. The script will:
+
+  1. Read a YAML file defining orgs, users, and device counts
+  2. Log in as admin
+  3. Create each org via POST /api/admin/organisations
+  4. Create users per org via POST /api/admin/users
+  5. Provision devices per org via POST /api/admin/devices (with metrics enabled, triggering Grafana dashboard + MQTT config)
+  6. Output a mapping of device codes so the simulator uses matching IDs
+
+  The simulator would then need a small tweak — instead of soak-device-0000, it'd use the actual provisioned device codes from the YAML/output so data
+   flows through the real pipeline end-to-end.

@@ -1,0 +1,63 @@
+name: Soak Test — Collect Metrics
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run weekly on Monday at 06:00 UTC
+    - cron: "0 6 * * 1"
+
+jobs:
+  collect:
+    name: Download Metrics from Soak VM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download metrics CSV
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SOAK_VM_HOST }}
+          username: azureuser
+          key: ${{ secrets.SOAK_VM_SSH_KEY }}
+          script_stop: true
+          script: |
+            cat /opt/iotdash/soak-metrics.csv
+
+      - name: Fetch metrics via SCP
+        run: |
+          mkdir -p /tmp/soak-metrics
+          echo "${{ secrets.SOAK_VM_SSH_KEY }}" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
+          scp -o StrictHostKeyChecking=no -i /tmp/ssh_key \
+            azureuser@${{ secrets.SOAK_VM_HOST }}:/opt/iotdash/soak-metrics.csv \
+            /tmp/soak-metrics/soak-metrics-$(date +%Y%m%d).csv
+          rm /tmp/ssh_key
+
+      - name: Upload metrics artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: soak-metrics-${{ github.run_id }}
+          path: /tmp/soak-metrics/
+          retention-days: 90
+
+      - name: Print summary
+        run: |
+          CSV="/tmp/soak-metrics/soak-metrics-$(date +%Y%m%d).csv"
+          if [[ -f "$CSV" ]]; then
+            ROWS=$(wc -l < "$CSV")
+            FIRST=$(head -2 "$CSV" | tail -1 | cut -d',' -f1)
+            LAST=$(tail -1 "$CSV" | cut -d',' -f1)
+            echo "## Soak Test Metrics Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Data points:** $((ROWS - 1))" >> $GITHUB_STEP_SUMMARY
+            echo "- **First entry:** $FIRST" >> $GITHUB_STEP_SUMMARY
+            echo "- **Last entry:** $LAST" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Last 5 entries" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            head -1 "$CSV" >> $GITHUB_STEP_SUMMARY
+            tail -5 "$CSV" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi

@@ -1,0 +1,80 @@
+# Soak test company/device layout
+# Used by tools/soak_provision.py to create orgs, users, and devices via the backend API.
+# Device codes are auto-generated as: {org_slug}-device-{0000..N}
+# The simulator uses these codes as MQTT client IDs.
+
+companies:
+  - name: "Acme Manufacturing"
+    slug: acme
+    devices: 300
+    metrics: [temperature, humidity, engine_rpm]
+    users:
+      - email: viewer@acme.test
+        password: AcmeView123!
+        role: viewer
+
+  - name: "Nordic Logistics"
+    slug: nordic
+    devices: 250
+    metrics: [temperature, humidity]
+    users:
+      - email: ops@nordic.test
+        password: NordicOps123!
+        role: viewer
+
+  - name: "SolarEdge Systems"
+    slug: solaredge
+    devices: 200
+    metrics: [temperature, engine_rpm]
+    users:
+      - email: admin@solaredge.test
+        password: SolarAdmin123!
+        role: viewer
+
+  - name: "FreshChain Cold Storage"
+    slug: freshchain
+    devices: 100
+    metrics: [temperature, humidity]
+    users:
+      - email: warehouse@freshchain.test
+        password: FreshView123!
+        role: viewer
+
+  - name: "TinyMotors Workshop"
+    slug: tinymotors
+    devices: 50
+    metrics: [temperature, engine_rpm]
+    users:
+      - email: admin@tinymotors.test
+        password: TinyAdmin123!
+        role: viewer
+
+  - name: "GreenField Farms"
+    slug: greenfield
+    devices: 50
+    metrics: [temperature, humidity]
+    users:
+      - email: admin@greenfield.test
+        password: GreenAdmin123!
+        role: viewer
+
+  - name: "PeakSensor Analytics"
+    slug: peaksensor
+    devices: 30
+    metrics: [temperature, humidity, engine_rpm]
+    users:
+      - email: analyst@peaksensor.test
+        password: PeakView123!
+        role: viewer
+
+  - name: "MicroGrid Energy"
+    slug: microgrid
+    devices: 20
+    metrics: [temperature, engine_rpm]
+    users:
+      - email: admin@microgrid.test
+        password: MicroAdmin123!
+        role: viewer
+
+# Total: 1000 devices across 8 companies
+# Distribution: 300 + 250 + 200 + 100 + 50 + 50 + 30 + 20 = 1000

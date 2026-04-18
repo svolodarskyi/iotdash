@@ -1,0 +1,86 @@
+# Soak test overrides — 1000 devices @ 5s intervals (~200 msg/s)
+# Usage: docker compose -f docker-compose.yml -f docker-compose.soak.yml up -d
+
+services:
+
+  emqx:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    environment:
+      # Tune for 1000+ connections
+      EMQX_LISTENER__TCP__EXTERNAL__ACCEPTORS: 16
+      EMQX_LISTENER__TCP__EXTERNAL__MAX_CONNECTIONS: 2048
+    restart: always
+
+  telegraf:
+    volumes:
+      - ./telegraf.soak.conf:/etc/telegraf/telegraf.conf:ro
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: always
+
+  influxdb:
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+    environment:
+      # WAL tuning for sustained writes
+      INFLUXD_STORAGE_WAL_FSYNC_DELAY: "100ms"
+      INFLUXD_STORAGE_CACHE_SNAPSHOT_MEMORY_SIZE: "256m"
+      INFLUXD_STORAGE_CACHE_SNAPSHOT_WRITE_COLD_DURATION: "5m"
+      INFLUXD_STORAGE_COMPACT_FULL_WRITE_COLD_DURATION: "24h"
+    restart: always
+
+  grafana:
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: always
+
+  postgres:
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: always
+
+  backend:
+    image: ghcr.io/erfolg/iotdash-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    volumes: []  # No source mount in soak — use built image
+    environment:
+      FRONTEND_URL: "http://localhost:5173"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: always
+
+  mailhog:
+    profiles:
+      - disabled  # Don't start mailhog in soak test
+
+  frontend:
+    image: ghcr.io/erfolg/iotdash-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "5173:80"
+    volumes: []  # No source mount in soak — use built image
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: always
+
+volumes:
+  frontend_node_modules: {}  # Keep declared but unused in soak

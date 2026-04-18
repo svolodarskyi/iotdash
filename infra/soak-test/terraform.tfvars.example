@@ -1,0 +1,24 @@
+# Azure region
+location = "westeurope"
+
+# VM configuration
+vm_size       = "Standard_D2s_v5"  # 2 vCPU, 8 GB RAM, no CPU credit throttling
+os_disk_size_gb = 128
+
+# SSH access — replace with your public key
+admin_username       = "azureuser"
+admin_ssh_public_key = "ssh-rsa AAAA... your-key-here"
+
+# Restrict access to your IP (run: curl -4 ifconfig.me)
+allowed_ssh_cidr = "YOUR_IP/32"
+
+# Repository
+github_repo   = "https://github.com/erfolg/iotdash.git"
+github_branch = "main"
+
+# Soak test parameters
+device_count     = 1000
+publish_interval = 5
+
+# Alerting (optional — Slack webhook or ntfy.sh URL)
+alert_webhook_url = ""
