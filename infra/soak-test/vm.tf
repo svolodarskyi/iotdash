@@ -24,6 +24,18 @@ resource "azurerm_network_security_group" "soak" {
   }
 
   security_rule {
+    name                       = "SSH-GitHubActions"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefixes    = var.github_actions_cidrs
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
     name                       = "MQTT"
     priority                   = 200
     direction                  = "Inbound"
