@@ -1,12 +1,16 @@
 name: Soak Test — Build & Deploy
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "docker-compose*.yml"
+      - "telegraf*.conf"
+      - ".github/workflows/soak-deploy.yml"
   workflow_dispatch:
     inputs:
-      vm_size:
-        description: "Azure VM size"
-        required: false
-        default: "Standard_D2s_v5"
       device_count:
         description: "Number of simulated devices"
         required: false
@@ -61,9 +65,6 @@ jobs:
           tags: |
             ${{ env.FRONTEND_IMAGE }}:latest
             ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-          build-args: |
-            VITE_API_URL=http://localhost:8000
-            VITE_GRAFANA_URL=http://localhost:3000
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
