@@ -91,20 +91,19 @@ jobs:
             git reset --hard origin/${{ github.ref_name }}
 
             # Log into ACR and pull new images
-            docker login ${{ secrets.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} -p '${{ secrets.ACR_PASSWORD }}'
-            docker pull ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-            docker pull ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-            docker tag ${{ env.BACKEND_IMAGE }}:${{ github.sha }} ${{ env.BACKEND_IMAGE }}:latest
-            docker tag ${{ env.FRONTEND_IMAGE }}:${{ github.sha }} ${{ env.FRONTEND_IMAGE }}:latest
+            sudo docker login ${{ secrets.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} -p '${{ secrets.ACR_PASSWORD }}'
+            sudo docker pull ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+            sudo docker pull ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+            sudo docker tag ${{ env.BACKEND_IMAGE }}:${{ github.sha }} ${{ env.BACKEND_IMAGE }}:latest
+            sudo docker tag ${{ env.FRONTEND_IMAGE }}:${{ github.sha }} ${{ env.FRONTEND_IMAGE }}:latest
 
             # Restart the stack
-            ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }} docker compose -f docker-compose.yml -f docker-compose.soak.yml up -d
+            sudo ACR_LOGIN_SERVER=${{ secrets.ACR_LOGIN_SERVER }} docker compose -f docker-compose.yml -f docker-compose.soak.yml up -d
 
             # Restart the simulator with new settings
-            sudo systemctl restart soak-simulator
+            sudo systemctl restart soak-simulator || true
 
             # Show status
-            docker compose -f docker-compose.yml -f docker-compose.soak.yml ps
+            sudo docker compose -f docker-compose.yml -f docker-compose.soak.yml ps
             echo ""
             echo "Deployed commit: ${{ github.sha }}"
-            echo "Devices: ${{ inputs.device_count }}, Interval: ${{ inputs.publish_interval }}s"
