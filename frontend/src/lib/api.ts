@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL ?? ''
 const GRAFANA_URL = import.meta.env.VITE_GRAFANA_URL ?? 'http://localhost:3000'
 
 export async function apiFetch<T>(path: string): Promise<T> {

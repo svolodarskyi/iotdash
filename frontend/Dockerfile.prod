@@ -8,10 +8,8 @@ RUN npm ci
 
 COPY . .
 
-# Build-time env vars for Vite (baked into static bundle)
-ARG VITE_API_URL=http://localhost:8000
+# No VITE_API_URL needed — nginx proxies /api to backend
 ARG VITE_GRAFANA_URL=http://localhost:3000
-ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_GRAFANA_URL=$VITE_GRAFANA_URL
 
 RUN npm run build
@@ -39,6 +37,13 @@ server {
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
+    }
+
+    # Proxy API requests to backend
+    location /api/ {
+        proxy_pass http://backend:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # SPA fallback — serve index.html for client-side routes
