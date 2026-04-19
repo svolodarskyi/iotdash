@@ -74,6 +74,12 @@ variable "github_actions_cidrs" {
   default     = ["4.152.0.0/14", "13.64.0.0/11", "20.0.0.0/9", "40.64.0.0/10", "52.0.0.0/8", "104.208.0.0/13"]
 }
 
+variable "dns_label" {
+  description = "DNS label for the public IP (<label>.<region>.cloudapp.azure.com)"
+  type        = string
+  default     = "iotdash-soak"
+}
+
 variable "alert_webhook_url" {
   description = "Webhook URL for soak test alerts (Slack, ntfy.sh, etc.). Leave empty to disable."
   type        = string
