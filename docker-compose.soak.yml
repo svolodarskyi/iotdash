@@ -73,6 +73,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+    ports:
+      - "80:5173"
     volumes: []  # No source mount in soak — use built image
     deploy:
       resources:
