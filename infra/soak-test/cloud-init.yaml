@@ -43,9 +43,10 @@ runcmd:
   # Log into ACR
   - docker login ${acr_login_server} -u ${acr_username} -p '${acr_password}'
 
-  # Clone repo
+  # Clone repo and fix git ownership for CI/CD (azureuser runs git via SSH)
   - git clone --branch ${github_branch} ${github_repo} /opt/iotdash
   - chown -R azureuser:azureuser /opt/iotdash
+  - su - azureuser -c "git config --global --add safe.directory /opt/iotdash"
 
   # Start the stack with soak overrides
   - cd /opt/iotdash && docker compose -f docker-compose.yml -f docker-compose.soak.yml up -d --build
