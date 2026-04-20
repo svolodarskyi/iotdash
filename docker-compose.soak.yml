@@ -57,7 +57,7 @@ services:
       dockerfile: Dockerfile.prod
     volumes: []  # No source mount in soak — use built image
     environment:
-      FRONTEND_URL: "http://localhost:5173"
+      FRONTEND_URL: "http://iotdash-soak.eastus.cloudapp.azure.com"
     deploy:
       resources:
         limits:
@@ -73,6 +73,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+      args:
+        VITE_GRAFANA_URL: "http://iotdash-soak.eastus.cloudapp.azure.com/grafana"
     ports:
       - "80:5173"
     volumes: []  # No source mount in soak — use built image
