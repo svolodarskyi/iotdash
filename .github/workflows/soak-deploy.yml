@@ -80,7 +80,9 @@ jobs:
           host: ${{ secrets.SOAK_VM_HOST }}
           username: azureuser
           key: ${{ secrets.SOAK_VM_SSH_KEY }}
+          timeout: 120s
           command_timeout: 10m
+          debug: true
           script: |
             set -euo pipefail
 
