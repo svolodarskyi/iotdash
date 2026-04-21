@@ -20,7 +20,8 @@ services:
       test: ["CMD", "emqx", "ctl", "status"]
       interval: 10s
       timeout: 5s
-      retries: 12
+      retries: 18
+      start_period: 30s
 
   # ── Bridge: MQTT → InfluxDB ──────────────────────
   telegraf:
