@@ -70,6 +70,7 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
@@ -84,8 +85,6 @@ services:
       GF_SMTP_FROM_ADDRESS: "alerts@iotdash.local"
       GF_SMTP_FROM_NAME: "IoTDash Alerts"
       GF_UNIFIED_ALERTING_ENABLED: "true"
-      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana/"
-      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     depends_on:
       influxdb:
         condition: service_healthy
