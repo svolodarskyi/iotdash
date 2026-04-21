@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useState } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useLocation } from '@tanstack/react-router'
 import { useAuthStore } from '../store/authStore'
 import { useLogout } from '../hooks/useAuth'
 import { useIsMobile } from '../hooks/useMediaQuery'
@@ -11,8 +11,13 @@ export function Layout({ children }: { children: ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const logout = useLogout()
   const navigate = useNavigate()
+  const location = useLocation()
   const isMobile = useIsMobile()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Determine active route
+  const isDashboard = location.pathname.startsWith('/dashboard')
+  const isAdmin = location.pathname.startsWith('/admin')
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -59,14 +64,22 @@ export function Layout({ children }: { children: ReactNode }) {
               <nav className="flex items-center gap-4">
                 <Link
                   to="/dashboard"
-                  className="text-sm text-gray-600 hover:text-gray-900"
+                  className={`text-sm hover:text-gray-900 transition-colors ${
+                    isDashboard
+                      ? 'text-blue-600 font-semibold'
+                      : 'text-gray-600'
+                  }`}
                 >
                   Dashboard
                 </Link>
                 {user?.role === 'admin' && (
                   <Link
                     to="/admin"
-                    className="text-sm text-gray-600 hover:text-gray-900"
+                    className={`text-sm hover:text-gray-900 transition-colors ${
+                      isAdmin
+                        ? 'text-blue-600 font-semibold'
+                        : 'text-gray-600'
+                    }`}
                   >
                     Admin
                   </Link>

@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { useAuthStore } from '../store/authStore'
 
 interface MobileNavProps {
@@ -9,6 +9,11 @@ interface MobileNavProps {
 
 export function MobileNav({ isOpen, onClose, onLogout }: MobileNavProps) {
   const user = useAuthStore((s) => s.user)
+  const location = useLocation()
+
+  // Determine active route
+  const isDashboard = location.pathname.startsWith('/dashboard')
+  const isAdmin = location.pathname.startsWith('/admin')
 
   return (
     <>
@@ -66,7 +71,11 @@ export function MobileNav({ isOpen, onClose, onLogout }: MobileNavProps) {
             <Link
               to="/dashboard"
               onClick={onClose}
-              className="block px-4 py-3 text-base text-gray-700 hover:bg-gray-100 rounded-md min-h-[44px] flex items-center"
+              className={`block px-4 py-3 text-base rounded-md min-h-[44px] flex items-center transition-colors ${
+                isDashboard
+                  ? 'bg-blue-50 text-blue-700 font-semibold'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
             >
               Dashboard
             </Link>
@@ -74,7 +83,11 @@ export function MobileNav({ isOpen, onClose, onLogout }: MobileNavProps) {
               <Link
                 to="/admin"
                 onClick={onClose}
-                className="block px-4 py-3 text-base text-gray-700 hover:bg-gray-100 rounded-md min-h-[44px] flex items-center"
+                className={`block px-4 py-3 text-base rounded-md min-h-[44px] flex items-center transition-colors ${
+                  isAdmin
+                    ? 'bg-blue-50 text-blue-700 font-semibold'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
               >
                 Admin
               </Link>

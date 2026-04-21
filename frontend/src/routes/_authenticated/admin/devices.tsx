@@ -13,7 +13,6 @@ import {
 } from '../../../hooks/useAdmin'
 import type { DeviceAdmin } from '../../../types/api'
 import { useIsMobile } from '../../../hooks/useMediaQuery'
-import { MobileStepper } from '../../../components/MobileStepper'
 
 export const Route = createFileRoute('/_authenticated/admin/devices')({
   component: AdminDevices,
@@ -40,7 +39,6 @@ function AdminDevices() {
 
   const [showCreate, setShowCreate] = useState(false)
   const [autoCode, setAutoCode] = useState(true)
-  const [wizardStep, setWizardStep] = useState(1) // Mobile wizard step
   const [form, setForm] = useState({
     device_code: '',
     name: '',
@@ -77,15 +75,9 @@ function AdminDevices() {
           setForm({ device_code: '', name: '', organisation_id: '', device_type_id: '', metric_ids: [], auto_enable: false })
           setShowCreate(false)
           setAutoCode(true)
-          setWizardStep(1)
         },
       },
     )
-  }
-
-  const closeCreateForm = () => {
-    setShowCreate(false)
-    setWizardStep(1)
   }
 
   const toggleMetric = (metricId: string, list: string[], setter: (v: string[]) => void) => {
@@ -157,171 +149,99 @@ function AdminDevices() {
         </button>
       </div>
 
-      {/* Create form - Mobile Wizard or Desktop Form */}
+      {/* Create form - Original layout for both desktop and mobile */}
       {showCreate && (
         <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200 space-y-3">
           <h3 className="text-sm font-medium text-gray-700">Provision New Device</h3>
-
-          {/* Mobile Wizard Stepper */}
-          {isMobile && (
-            <MobileStepper
-              currentStep={wizardStep}
-              totalSteps={3}
-              stepLabels={['Device Info', 'Metrics', 'Review']}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input
+              type="text"
+              placeholder="Device name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[44px]"
             />
-          )}
-
-          {/* Step 1: Device Info (or all on desktop) */}
-          {(!isMobile || wizardStep === 1) && (
-            <div className={isMobile ? 'space-y-3' : 'grid grid-cols-2 gap-3'}>
+            <select
+              value={form.organisation_id}
+              onChange={(e) => setForm({ ...form, organisation_id: e.target.value })}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[44px]"
+            >
+              <option value="">Select organisation</option>
+              {orgs?.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+            </select>
+            <div className="md:col-span-2">
+              <label className="flex items-center gap-2 text-sm text-gray-700 mb-2 min-h-[44px]">
+                <input type="checkbox" checked={autoCode} onChange={(e) => setAutoCode(e.target.checked)} className="h-5 w-5" />
+                Auto-generate device UID
+              </label>
               <input
                 type="text"
-                placeholder="Device name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[44px]"
+                placeholder={autoCode ? 'Auto-generated on save' : 'Device UID (e.g. sensor04)'}
+                value={autoCode ? '' : form.device_code}
+                onChange={(e) => setForm({ ...form, device_code: e.target.value })}
+                disabled={autoCode}
+                className={`px-3 py-2 border border-gray-300 rounded-md text-sm w-full min-h-[44px] ${autoCode ? 'bg-gray-100 text-gray-400' : ''}`}
               />
-              <select
-                value={form.organisation_id}
-                onChange={(e) => setForm({ ...form, organisation_id: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[44px]"
-              >
-                <option value="">Select organisation</option>
-                {orgs?.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
-              </select>
-              <div className={isMobile ? '' : 'col-span-2'}>
-                <label className="flex items-center gap-2 text-sm text-gray-700 mb-2 min-h-[44px]">
-                  <input type="checkbox" checked={autoCode} onChange={(e) => setAutoCode(e.target.checked)} className="h-5 w-5" />
-                  Auto-generate device UID
-                </label>
-                <input
-                  type="text"
-                  placeholder={autoCode ? 'Auto-generated on save' : 'Device UID (e.g. sensor04)'}
-                  value={autoCode ? '' : form.device_code}
-                  onChange={(e) => setForm({ ...form, device_code: e.target.value })}
-                  disabled={autoCode}
-                  className={`px-3 py-2 border border-gray-300 rounded-md text-sm w-full min-h-[44px] ${autoCode ? 'bg-gray-100 text-gray-400' : ''}`}
-                />
-              </div>
-              <select
-                value={form.device_type_id}
-                onChange={(e) => handleDeviceTypeChange(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[44px]"
-              >
-                <option value="">Select device type</option>
-                {deviceTypes?.map((dt) => <option key={dt.id} value={dt.id}>{dt.name}</option>)}
-              </select>
             </div>
-          )}
-
-          {/* Step 2: Metrics (or all on desktop) */}
-          {(!isMobile || wizardStep === 2) && (
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">Metrics</p>
-              {!form.device_type_id && (
-                <p className="text-xs text-gray-400">Select a device type to see available metrics</p>
-              )}
-              <div className="space-y-2">
-                {metrics?.filter((m) => allowedMetricIds.has(m.id)).map((m) => (
-                  <label key={m.id} className="flex items-center gap-2 text-sm text-gray-700 min-h-[44px]">
-                    <input
-                      type="checkbox"
-                      checked={form.metric_ids.includes(m.id)}
-                      onChange={() => toggleMetric(m.id, form.metric_ids, (v) => setForm({ ...form, metric_ids: v }))}
-                      className="h-5 w-5"
-                    />
-                    {m.name} {m.unit && `(${m.unit})`}
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Review & Submit (or all on desktop) */}
-          {(!isMobile || wizardStep === 3) && (
-            <>
-              {isMobile && (
-                <div className="p-3 bg-gray-50 rounded-md space-y-2 text-sm">
-                  <h4 className="font-medium text-gray-900">Review</h4>
-                  <p><span className="text-gray-600">Name:</span> {form.name || '-'}</p>
-                  <p><span className="text-gray-600">Organisation:</span> {orgs?.find(o => o.id === form.organisation_id)?.name || '-'}</p>
-                  <p><span className="text-gray-600">Type:</span> {deviceTypes?.find(dt => dt.id === form.device_type_id)?.name || '-'}</p>
-                  <p><span className="text-gray-600">Metrics:</span> {form.metric_ids.length} selected</p>
-                </div>
-              )}
-              <label className="flex items-center gap-2 text-sm text-gray-700 min-h-[44px]">
-                <input
-                  type="checkbox"
-                  checked={form.auto_enable}
-                  onChange={(e) => setForm({ ...form, auto_enable: e.target.checked })}
-                  className="h-5 w-5"
-                />
-                Send config to device immediately (auto-enable)
-              </label>
-            </>
-          )}
-
-          {/* Navigation buttons */}
-          <div className="flex gap-2 justify-between">
-            {isMobile ? (
-              <>
-                <div className="flex gap-2">
-                  {wizardStep > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => setWizardStep(wizardStep - 1)}
-                      className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 min-h-[44px]"
-                    >
-                      Back
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={closeCreateForm}
-                    className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 min-h-[44px]"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                {wizardStep < 3 ? (
-                  <button
-                    type="button"
-                    onClick={() => setWizardStep(wizardStep + 1)}
-                    disabled={wizardStep === 1 && (!form.name || !form.organisation_id || !form.device_type_id)}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 min-h-[44px]"
-                  >
-                    Next
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleCreate}
-                    disabled={!form.name || !form.organisation_id || !form.device_type_id}
-                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 min-h-[44px]"
-                  >
-                    Provision
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={handleCreate}
-                  disabled={!form.name || !form.organisation_id || !form.device_type_id}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 min-h-[44px]"
-                >
-                  Provision
-                </button>
-                <button
-                  type="button"
-                  onClick={closeCreateForm}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 min-h-[44px]"
-                >
-                  Cancel
-                </button>
-              </>
+            <select
+              value={form.device_type_id}
+              onChange={(e) => handleDeviceTypeChange(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[44px]"
+            >
+              <option value="">Select device type</option>
+              {deviceTypes?.map((dt) => <option key={dt.id} value={dt.id}>{dt.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">Metrics</p>
+            {!form.device_type_id && (
+              <p className="text-xs text-gray-400">Select a device type to see available metrics</p>
             )}
+            <div className="flex flex-wrap gap-2">
+              {metrics?.filter((m) => allowedMetricIds.has(m.id)).map((m) => (
+                <label key={m.id} className="flex items-center gap-1.5 text-sm text-gray-700 min-h-[44px]">
+                  <input
+                    type="checkbox"
+                    checked={form.metric_ids.includes(m.id)}
+                    onChange={() => toggleMetric(m.id, form.metric_ids, (v) => setForm({ ...form, metric_ids: v }))}
+                    className="h-5 w-5"
+                  />
+                  {m.name} {m.unit && `(${m.unit})`}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Auto-enable section - visually separated */}
+          <div className="pt-3 border-t border-gray-200">
+            <label className="flex items-center gap-2 text-sm min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={form.auto_enable}
+                onChange={(e) => setForm({ ...form, auto_enable: e.target.checked })}
+                className="h-5 w-5"
+              />
+              <span className="font-semibold text-gray-900">
+                Send config to device immediately (auto-enable)
+              </span>
+            </label>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleCreate}
+              disabled={!form.name || !form.organisation_id || !form.device_type_id}
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 min-h-[44px]"
+            >
+              Provision
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCreate(false)}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 min-h-[44px]"
+            >
+              Cancel
+            </button>
           </div>
           {createDevice.isError && <p className="text-red-600 text-sm">{(createDevice.error as Error).message}</p>}
         </div>
