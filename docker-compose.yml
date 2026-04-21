@@ -85,7 +85,7 @@ services:
       GF_SMTP_FROM_NAME: "IoTDash Alerts"
       GF_UNIFIED_ALERTING_ENABLED: "true"
       GF_SERVER_ROOT_URL: "/grafana/"
-      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_SERVER_SERVE_FROM_SUB_PATH: "false"
     depends_on:
       influxdb:
         condition: service_healthy
