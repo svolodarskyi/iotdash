@@ -20,7 +20,7 @@ export function MobileNav({ isOpen, onClose, onLogout }: MobileNavProps) {
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-gray-900 bg-opacity-30 z-40"
+          className="fixed inset-0 bg-gray-900/30 z-40"
           onClick={onClose}
           aria-hidden="true"
         />

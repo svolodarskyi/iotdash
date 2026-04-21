@@ -464,7 +464,7 @@ function AdminDevices() {
 
       {/* Edit modal (mobile) */}
       {isMobile && editDeviceId && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-30 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-gray-900/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Device</h3>
             <div className="space-y-4">
@@ -509,7 +509,7 @@ function AdminDevices() {
 
       {/* Metrics modal */}
       {metricsModal && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-30 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-gray-900/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Manage Metrics &mdash; {metricsModal.device_code}
