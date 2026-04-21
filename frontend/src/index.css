@@ -1,1 +1,41 @@
 @import "tailwindcss";
+
+/* Mobile-specific fixes */
+
+/* iOS Safari viewport fix - prevent content shifting due to browser chrome */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Remove tap highlight on all elements (cleaner mobile experience) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent zoom on input focus (iOS) - minimum 16px font size */
+input,
+select,
+textarea {
+  font-size: max(16px, 1em);
+}
+
+/* Scrollbar hide utility for horizontal scrolling containers */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Animation delays for loading skeletons */
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}

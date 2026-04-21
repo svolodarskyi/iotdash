@@ -76,7 +76,7 @@ function DeviceDetail() {
         </div>
         <button
           onClick={() => setRefreshKey((k) => k + 1)}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 min-h-[44px]"
         >
           Refresh Panels
         </button>
@@ -84,10 +84,10 @@ function DeviceDetail() {
 
       {/* Metric selector */}
       {enabledMetrics.length > 0 && (
-        <div className="mb-6 flex flex-wrap gap-2">
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           <button
             onClick={selectAll}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap min-h-[44px] ${
               selectedMetrics === null
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -99,7 +99,7 @@ function DeviceDetail() {
             <button
               key={m.metric_id}
               onClick={() => toggleMetric(m.metric_name)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap min-h-[44px] ${
                 activeSelection.has(m.metric_name)
                   ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300'
                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
