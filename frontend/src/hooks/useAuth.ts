@@ -3,7 +3,7 @@ import { apiFetch, apiPost } from '../lib/api'
 import { useAuthStore } from '../store/authStore'
 import type { LoginRequest, LoginResponse, MeResponse } from '../types/api'
 
-export function useMe() {
+export function useMe(options?: { enabled?: boolean }) {
   const { setUser, clearUser } = useAuthStore()
 
   return useQuery({
@@ -20,6 +20,7 @@ export function useMe() {
     },
     retry: false,
     staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled ?? true,
   })
 }
 

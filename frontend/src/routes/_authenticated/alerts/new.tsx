@@ -4,12 +4,14 @@ import { useDevices, useDeviceMetrics } from '../../../hooks/useDevices'
 import { useAdminDevices, useAdminOrgs, useMetrics } from '../../../hooks/useAdmin'
 import { useCreateAlert } from '../../../hooks/useAlerts'
 import { useAuthStore } from '../../../store/authStore'
+import { useIsMobile } from '../../../hooks/useMediaQuery'
 
 export const Route = createFileRoute('/_authenticated/alerts/new')({
   component: NewAlert,
 })
 
 function NewAlert() {
+  const isMobile = useIsMobile()
   const navigate = useNavigate()
   const createAlert = useCreateAlert()
   const user = useAuthStore((s) => s.user)
@@ -90,7 +92,7 @@ function NewAlert() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {isAdmin && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className={isMobile ? 'space-y-4' : 'grid grid-cols-2 gap-4'}>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Company
@@ -98,7 +100,7 @@ function NewAlert() {
               <select
                 value={filterOrgId}
                 onChange={(e) => setFilterOrgId(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm min-h-[44px]"
               >
                 <option value="">All companies</option>
                 {orgs?.map((o) => (
@@ -113,7 +115,7 @@ function NewAlert() {
               <select
                 value={filterMetricName}
                 onChange={(e) => setFilterMetricName(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm min-h-[44px]"
               >
                 <option value="">All metrics</option>
                 {allMetrics?.map((m) => (
@@ -137,7 +139,7 @@ function NewAlert() {
               value={deviceId}
               onChange={(e) => setDeviceId(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm min-h-[44px]"
             >
               <option value="">Select a device</option>
               {isAdmin && groupedDevices
@@ -164,18 +166,18 @@ function NewAlert() {
             Metric
           </label>
           {!deviceId ? (
-            <select disabled className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-400">
+            <select disabled className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-400 min-h-[44px]">
               <option>Select a device first</option>
             </select>
           ) : !deviceMetrics?.length ? (
-            <select disabled className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-400">
+            <select disabled className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-400 min-h-[44px]">
               <option>No metrics configured</option>
             </select>
           ) : (
             <select
               value={metric}
               onChange={(e) => setMetric(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm min-h-[44px]"
             >
               {deviceMetrics.map((dm) => (
                 <option key={dm.metric_id} value={dm.metric_name}>
@@ -186,7 +188,7 @@ function NewAlert() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className={isMobile ? 'space-y-4' : 'grid grid-cols-2 gap-4'}>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Condition
@@ -194,7 +196,7 @@ function NewAlert() {
             <select
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm min-h-[44px]"
             >
               <option value="above">Above</option>
               <option value="below">Below</option>
@@ -211,7 +213,8 @@ function NewAlert() {
               value={threshold}
               onChange={(e) => setThreshold(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm min-h-[44px]"
+              inputMode="decimal"
             />
           </div>
         </div>
@@ -226,7 +229,8 @@ function NewAlert() {
             value={durationSeconds}
             onChange={(e) => setDurationSeconds(e.target.value)}
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm min-h-[44px]"
+            inputMode="numeric"
           />
           <p className="text-xs text-gray-500 mt-1">
             Alert fires after the condition holds for this many seconds.
@@ -242,7 +246,8 @@ function NewAlert() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm min-h-[44px]"
+            inputMode="email"
           />
         </div>
 
@@ -252,18 +257,18 @@ function NewAlert() {
           </p>
         )}
 
-        <div className="flex gap-3 pt-2">
+        <div className={isMobile ? 'space-y-2' : 'flex gap-3 pt-2'}>
           <button
             type="submit"
             disabled={createAlert.isPending || !metric}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 min-h-[44px] w-full md:w-auto"
           >
             {createAlert.isPending ? 'Creating...' : 'Create Alert'}
           </button>
           <button
             type="button"
             onClick={() => navigate({ to: '/alerts' })}
-            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50"
+            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 min-h-[44px] w-full md:w-auto"
           >
             Cancel
           </button>
