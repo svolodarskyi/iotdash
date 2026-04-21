@@ -54,7 +54,7 @@ function AdminDevices() {
 
   // Inline edit state
   const [editDeviceId, setEditDeviceId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ name: '', device_type_id: '', is_active: true })
+  const [editForm, setEditForm] = useState({ name: '', is_active: true })
 
   // Mobile card menu state
   const [openCardMenu, setOpenCardMenu] = useState<string | null>(null)
@@ -111,7 +111,6 @@ function AdminDevices() {
     setEditDeviceId(device.id)
     setEditForm({
       name: device.name,
-      device_type_id: device.device_type_id,
       is_active: device.is_active,
     })
   }
@@ -398,11 +397,7 @@ function AdminDevices() {
                         <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="px-2 py-1 border border-gray-300 rounded text-sm w-full" />
                       </td>
                       <td className="px-4 py-3 text-gray-500">{d.organisation_name}</td>
-                      <td className="px-4 py-3">
-                        <select value={editForm.device_type_id} onChange={(e) => setEditForm({ ...editForm, device_type_id: e.target.value })} className="px-2 py-1 border border-gray-300 rounded text-sm">
-                          {deviceTypes?.map((dt) => <option key={dt.id} value={dt.id}>{dt.name}</option>)}
-                        </select>
-                      </td>
+                      <td className="px-4 py-3 text-gray-500">{d.device_type_name}</td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
                           {d.metrics.filter((m) => m.is_enabled).map((m) => (
@@ -413,7 +408,7 @@ function AdminDevices() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <input type="checkbox" checked={editForm.is_active} onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })} />
+                        <input type="checkbox" checked={editForm.is_active} onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })} className="h-5 w-5" />
                       </td>
                       <td className="px-4 py-3 text-right space-x-2">
                         <button onClick={handleSaveEdit} className="text-green-600 hover:text-green-800 text-sm">Save</button>
@@ -467,9 +462,54 @@ function AdminDevices() {
         </div>
       )}
 
+      {/* Edit modal (mobile) */}
+      {isMobile && editDeviceId && (
+        <div className="fixed inset-0 bg-gray-900/30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Device</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Device Name</label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[44px]"
+                />
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm min-h-[44px]">
+                  <input
+                    type="checkbox"
+                    checked={editForm.is_active}
+                    onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })}
+                    className="h-5 w-5"
+                  />
+                  <span className="font-medium text-gray-700">Device is active</span>
+                </label>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-6">
+              <button
+                onClick={() => setEditDeviceId(null)}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 min-h-[44px]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 min-h-[44px]"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Metrics modal */}
       {metricsModal && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-gray-900/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Manage Metrics &mdash; {metricsModal.device_code}
