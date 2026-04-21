@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from '@tanstack/react-router'
 import { useAuthStore } from '../store/authStore'
 import { useLogout } from '../hooks/useAuth'
@@ -18,6 +18,20 @@ export function Layout({ children }: { children: ReactNode }) {
   // Determine active route
   const isDashboard = location.pathname.startsWith('/dashboard')
   const isAdmin = location.pathname.startsWith('/admin')
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileMenuOpen])
 
   const handleLogout = () => {
     logout.mutate(undefined, {
