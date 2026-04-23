@@ -33,7 +33,7 @@ export function GrafanaEmbed({ url, title, refreshKey, lazyLoad = false }: Grafa
         >
           <button
             onClick={() => setLoaded(true)}
-            className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 min-h-[44px]"
+            className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
           >
             Tap to load graph
           </button>

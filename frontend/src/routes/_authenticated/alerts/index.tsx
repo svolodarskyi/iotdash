@@ -50,7 +50,7 @@ function AlertsIndex() {
         <h2 className="text-2xl font-semibold text-gray-900">Alerts</h2>
         <Link
           to="/alerts/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 min-h-[44px] flex items-center"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 min-h-[44px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
         >
           {isMobile ? 'New' : 'New Alert'}
         </Link>
@@ -79,7 +79,7 @@ function AlertsIndex() {
                 </div>
                 <button
                   onClick={() => setOpenCardMenu(openCardMenu === alert.id ? null : alert.id)}
-                  className="p-2 text-gray-500 hover:text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="p-2 text-gray-500 hover:text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   aria-label="Actions"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -100,6 +100,9 @@ function AlertsIndex() {
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                   <span className="text-gray-600">Status:</span>
                   <button
+                    role="switch"
+                    aria-checked={alert.is_enabled}
+                    aria-label="Alert enabled"
                     onClick={() => handleToggle(alert.id, alert.is_enabled)}
                     disabled={toggleAlert.isPending}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -122,7 +125,7 @@ function AlertsIndex() {
                     to="/alerts/$alertId/edit"
                     params={{ alertId: alert.id }}
                     onClick={() => setOpenCardMenu(null)}
-                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded min-h-[44px] flex items-center"
+                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded min-h-[44px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
                     Edit Alert
                   </Link>
@@ -132,7 +135,7 @@ function AlertsIndex() {
                       setOpenCardMenu(null)
                     }}
                     disabled={deletingId === alert.id}
-                    className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded min-h-[44px] flex items-center disabled:opacity-50"
+                    className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded min-h-[44px] flex items-center disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
                     {deletingId === alert.id ? 'Deleting Alert...' : 'Delete Alert'}
                   </button>
@@ -194,6 +197,9 @@ function AlertsIndex() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
+                      role="switch"
+                      aria-checked={alert.is_enabled}
+                      aria-label="Alert enabled"
                       onClick={() => handleToggle(alert.id, alert.is_enabled)}
                       disabled={toggleAlert.isPending}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -211,14 +217,14 @@ function AlertsIndex() {
                     <Link
                       to="/alerts/$alertId/edit"
                       params={{ alertId: alert.id }}
-                      className="text-blue-600 hover:text-blue-800 mr-3"
+                      className="text-blue-600 hover:text-blue-800 mr-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     >
                       Edit
                     </Link>
                     <button
                       onClick={() => handleDelete(alert.id)}
                       disabled={deletingId === alert.id}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     >
                       {deletingId === alert.id ? 'Deleting...' : 'Delete'}
                     </button>

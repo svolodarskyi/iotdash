@@ -3,7 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_user
+from app.auth import get_current_user, require_admin
 from app.config import settings
 from app.database import get_db
 from app.models import DeviceProvisioned, DeviceProvisionedMetric, GrafanaDashboard, User
@@ -76,9 +76,9 @@ def get_device(
 def get_device_embed_urls(
     device_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    admin: User = Depends(require_admin),
 ):
-    device = _get_device_for_user(db, device_id, current_user)
+    device = _get_device_for_user(db, device_id, admin)
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
 

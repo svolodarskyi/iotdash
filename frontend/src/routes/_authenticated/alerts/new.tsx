@@ -261,14 +261,14 @@ function NewAlert() {
           <button
             type="submit"
             disabled={createAlert.isPending || !metric}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 min-h-[44px] w-full md:w-auto"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 min-h-[44px] w-full md:w-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
           >
             {createAlert.isPending ? 'Creating...' : 'Create Alert'}
           </button>
           <button
             type="button"
             onClick={() => navigate({ to: '/alerts' })}
-            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 min-h-[44px] w-full md:w-auto"
+            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 min-h-[44px] w-full md:w-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
           >
             Cancel
           </button>

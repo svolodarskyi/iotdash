@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { breakpoints } from '../lib/breakpoints'
 
 /**
  * Hook to check if a media query matches
@@ -37,19 +38,19 @@ export function useMediaQuery(query: string): boolean {
 }
 
 /**
- * Hook to detect mobile viewport (< 768px)
- * Corresponds to Tailwind's md breakpoint
+ * Hook to detect mobile viewport (< md breakpoint)
+ * Corresponds to Tailwind's md breakpoint (768px)
  */
-export const useIsMobile = () => useMediaQuery('(max-width: 767px)')
+export const useIsMobile = () => useMediaQuery(`(max-width: ${breakpoints.tablet - 1}px)`)
 
 /**
- * Hook to detect tablet viewport (768px - 1023px)
- * Between Tailwind's md and lg breakpoints
+ * Hook to detect tablet viewport (md to lg breakpoints)
+ * Between Tailwind's md (768px) and lg (1024px) breakpoints
  */
-export const useIsTablet = () => useMediaQuery('(min-width: 768px) and (max-width: 1023px)')
+export const useIsTablet = () => useMediaQuery(`(min-width: ${breakpoints.tablet}px) and (max-width: ${breakpoints.desktop - 1}px)`)
 
 /**
- * Hook to detect desktop viewport (>= 1024px)
- * Corresponds to Tailwind's lg breakpoint and above
+ * Hook to detect desktop viewport (>= lg breakpoint)
+ * Corresponds to Tailwind's lg breakpoint (1024px) and above
  */
-export const useIsDesktop = () => useMediaQuery('(min-width: 1024px)')
+export const useIsDesktop = () => useMediaQuery(`(min-width: ${breakpoints.desktop}px)`)

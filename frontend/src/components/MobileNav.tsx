@@ -38,7 +38,7 @@ export function MobileNav({ isOpen, onClose, onLogout }: MobileNavProps) {
             <span className="text-lg font-semibold text-gray-900">Menu</span>
             <button
               onClick={onClose}
-              className="p-2 text-gray-500 hover:text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 text-gray-500 hover:text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               aria-label="Close menu"
             >
               <svg
@@ -71,7 +71,7 @@ export function MobileNav({ isOpen, onClose, onLogout }: MobileNavProps) {
             <Link
               to="/dashboard"
               onClick={onClose}
-              className={`block px-4 py-3 text-base rounded-md min-h-[44px] flex items-center transition-colors ${
+              className={`block px-4 py-3 text-base rounded-md min-h-[44px] flex items-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                 isDashboard
                   ? 'bg-blue-50 text-blue-700 font-semibold'
                   : 'text-gray-700 hover:bg-gray-100'
@@ -83,7 +83,7 @@ export function MobileNav({ isOpen, onClose, onLogout }: MobileNavProps) {
               <Link
                 to="/admin"
                 onClick={onClose}
-                className={`block px-4 py-3 text-base rounded-md min-h-[44px] flex items-center transition-colors ${
+                className={`block px-4 py-3 text-base rounded-md min-h-[44px] flex items-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                   isAdmin
                     ? 'bg-blue-50 text-blue-700 font-semibold'
                     : 'text-gray-700 hover:bg-gray-100'
@@ -101,7 +101,7 @@ export function MobileNav({ isOpen, onClose, onLogout }: MobileNavProps) {
                 onClose()
                 onLogout()
               }}
-              className="w-full px-4 py-3 text-base text-red-600 hover:bg-red-50 rounded-md min-h-[44px] flex items-center justify-center"
+              className="w-full px-4 py-3 text-base text-red-600 hover:bg-red-50 rounded-md min-h-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
               Logout
             </button>
