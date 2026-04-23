@@ -71,7 +71,7 @@ function LoginPage() {
           <button
             type="submit"
             disabled={login.isPending}
-            className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
           >
             {login.isPending ? 'Signing in...' : 'Sign in'}
           </button>

@@ -14,7 +14,7 @@ export const Route = createFileRoute('/_authenticated/dashboard/$deviceId')({
 function DeviceDetail() {
   const { deviceId } = Route.useParams()
   const { data: device, isLoading: deviceLoading } = useDevice(deviceId)
-  const { data: embedData, isLoading: embedLoading } = useDeviceEmbedUrls(deviceId)
+  const { data: embedData, isLoading: embedLoading, error: embedError } = useDeviceEmbedUrls(deviceId)
   const { data: deviceMetrics } = useQuery({
     queryKey: ['devices', deviceId, 'metrics'],
     queryFn: () => apiFetch<DeviceMetric[]>(`/api/devices/${deviceId}/metrics`),
@@ -29,6 +29,10 @@ function DeviceDetail() {
   if (!device) {
     return <p className="text-red-600">Device not found.</p>
   }
+
+  // Check if embed URLs failed due to permissions (403)
+  const isAdminOnly = embedError && embedError instanceof Error &&
+    embedError.message.includes('403')
 
   // Determine which metrics are selected (default: all)
   const enabledMetrics = deviceMetrics?.filter((m) => m.is_enabled) ?? []
@@ -62,7 +66,7 @@ function DeviceDetail() {
   return (
     <div>
       <div className="mb-6">
-        <Link to="/dashboard" className="text-sm text-blue-600 hover:underline">
+        <Link to="/dashboard" className="text-sm text-blue-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
           &larr; Back to devices
         </Link>
       </div>
@@ -76,7 +80,7 @@ function DeviceDetail() {
         </div>
         <button
           onClick={() => setRefreshKey((k) => k + 1)}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 min-h-[44px]"
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
         >
           Refresh Panels
         </button>
@@ -84,10 +88,10 @@ function DeviceDetail() {
 
       {/* Metric selector */}
       {enabledMetrics.length > 0 && (
-        <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="mb-6 flex gap-2 overflow-x-auto py-2 scrollbar-hide">
           <button
             onClick={selectAll}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap min-h-[44px] ${
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
               selectedMetrics === null
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -99,7 +103,7 @@ function DeviceDetail() {
             <button
               key={m.metric_id}
               onClick={() => toggleMetric(m.metric_name)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap min-h-[44px] ${
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                 activeSelection.has(m.metric_name)
                   ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300'
                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
@@ -111,7 +115,15 @@ function DeviceDetail() {
         </div>
       )}
 
-      {filteredUrls.length ? (
+      {isAdminOnly ? (
+        <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg">
+          <h3 className="text-lg font-medium text-amber-900 mb-2">Admin Access Required</h3>
+          <p className="text-sm text-amber-700">
+            Grafana visualizations are only available to administrators.
+            Please contact your system administrator if you need access to device metrics.
+          </p>
+        </div>
+      ) : filteredUrls.length ? (
         <div className="grid grid-cols-1 gap-6">
           {filteredUrls.map((embed, idx) => (
             <GrafanaEmbed

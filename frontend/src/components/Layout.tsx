@@ -19,6 +19,13 @@ export function Layout({ children }: { children: ReactNode }) {
   const isDashboard = location.pathname.startsWith('/dashboard')
   const isAdmin = location.pathname.startsWith('/admin')
 
+  // Close mobile menu when viewport changes to desktop
+  useEffect(() => {
+    if (!isMobile && mobileMenuOpen) {
+      setMobileMenuOpen(false)
+    }
+  }, [isMobile, mobileMenuOpen])
+
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -50,7 +57,7 @@ export function Layout({ children }: { children: ReactNode }) {
             {isMobile && isAuthenticated && (
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="p-2 text-gray-600 hover:text-gray-900 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-2 text-gray-600 hover:text-gray-900 min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 aria-label="Open menu"
               >
                 <svg
@@ -69,7 +76,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </button>
             )}
 
-            <Link to="/dashboard" className="text-xl font-semibold text-gray-900">
+            <Link to="/dashboard" className="text-xl font-semibold text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
               IoT Dashboard
             </Link>
 
@@ -78,7 +85,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <nav className="flex items-center gap-4">
                 <Link
                   to="/dashboard"
-                  className={`text-sm hover:text-gray-900 transition-colors ${
+                  className={`text-sm hover:text-gray-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                     isDashboard
                       ? 'text-blue-600 font-semibold'
                       : 'text-gray-600'
@@ -89,7 +96,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 {user?.role === 'admin' && (
                   <Link
                     to="/admin"
-                    className={`text-sm hover:text-gray-900 transition-colors ${
+                    className={`text-sm hover:text-gray-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                       isAdmin
                         ? 'text-blue-600 font-semibold'
                         : 'text-gray-600'
@@ -111,7 +118,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="text-sm text-gray-500 hover:text-gray-700 min-h-[44px] px-3"
+                  className="text-sm text-gray-500 hover:text-gray-700 min-h-[44px] px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 >
                   Logout
                 </button>

@@ -25,7 +25,7 @@ function DashboardIndex() {
         <nav className="flex gap-4" aria-label="Tabs">
           <button
             onClick={() => setActiveTab('devices')}
-            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors min-h-[44px] ${
+            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
               activeTab === 'devices'
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -35,7 +35,7 @@ function DashboardIndex() {
           </button>
           <button
             onClick={() => setActiveTab('alerts')}
-            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors min-h-[44px] ${
+            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
               activeTab === 'alerts'
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -178,7 +178,7 @@ function AdminDevicesView() {
               <Link
                 to="/dashboard/$deviceId"
                 params={{ deviceId: d.id }}
-                className="w-full px-4 py-2 text-center text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 min-h-[44px] flex items-center justify-center"
+                className="w-full px-4 py-2 text-center text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 min-h-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 View Dashboard
               </Link>
@@ -233,7 +233,7 @@ function AdminDevicesView() {
                     <Link
                       to="/dashboard/$deviceId"
                       params={{ deviceId: d.id }}
-                      className="text-blue-600 hover:text-blue-800 text-sm"
+                      className="text-blue-600 hover:text-blue-800 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     >
                       Dashboard
                     </Link>
@@ -297,7 +297,7 @@ function AlertsTab() {
         </p>
         <Link
           to="/alerts/new"
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 min-h-[44px]"
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
         >
           Create Alert
         </Link>
@@ -310,7 +310,7 @@ function AlertsTab() {
       <div className="flex justify-end mb-4">
         <Link
           to="/alerts/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 min-h-[44px] flex items-center"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 min-h-[44px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
         >
           {isMobile ? 'New' : 'New Alert'}
         </Link>
@@ -333,7 +333,7 @@ function AlertsTab() {
                 </div>
                 <button
                   onClick={() => setOpenCardMenu(openCardMenu === alert.id ? null : alert.id)}
-                  className="p-2 text-gray-500 hover:text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="p-2 text-gray-500 hover:text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   aria-label="Actions"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -354,9 +354,12 @@ function AlertsTab() {
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                   <span className="text-gray-600">Status:</span>
                   <button
+                    role="switch"
+                    aria-checked={alert.is_enabled}
+                    aria-label="Alert enabled"
                     onClick={() => handleToggle(alert.id, alert.is_enabled)}
                     disabled={toggleAlert.isPending}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                       alert.is_enabled ? 'bg-blue-600' : 'bg-gray-200'
                     }`}
                   >
@@ -375,7 +378,7 @@ function AlertsTab() {
                     to="/alerts/$alertId/edit"
                     params={{ alertId: alert.id }}
                     onClick={() => setOpenCardMenu(null)}
-                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded min-h-[44px] flex items-center"
+                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded min-h-[44px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
                     Edit Alert
                   </Link>
@@ -385,7 +388,7 @@ function AlertsTab() {
                       setOpenCardMenu(null)
                     }}
                     disabled={deletingId === alert.id}
-                    className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded min-h-[44px] flex items-center disabled:opacity-50"
+                    className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded min-h-[44px] flex items-center disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
                     {deletingId === alert.id ? 'Deleting Alert...' : 'Delete Alert'}
                   </button>
@@ -447,9 +450,12 @@ function AlertsTab() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
+                      role="switch"
+                      aria-checked={alert.is_enabled}
+                      aria-label="Alert enabled"
                       onClick={() => handleToggle(alert.id, alert.is_enabled)}
                       disabled={toggleAlert.isPending}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                         alert.is_enabled ? 'bg-blue-600' : 'bg-gray-200'
                       }`}
                     >
@@ -464,14 +470,14 @@ function AlertsTab() {
                     <Link
                       to="/alerts/$alertId/edit"
                       params={{ alertId: alert.id }}
-                      className="text-blue-600 hover:text-blue-800 mr-3"
+                      className="text-blue-600 hover:text-blue-800 mr-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     >
                       Edit
                     </Link>
                     <button
                       onClick={() => handleDelete(alert.id)}
                       disabled={deletingId === alert.id}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     >
                       {deletingId === alert.id ? 'Deleting...' : 'Delete'}
                     </button>

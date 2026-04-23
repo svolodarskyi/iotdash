@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
     MQTT_BROKER_HOST: str = "emqx"
     MQTT_BROKER_PORT: int = 1883
+    EMQX_WEB_URL: str = "http://emqx:18083"
 
     JWT_SECRET_KEY: str = "dev-secret-change-in-production"
     JWT_ALGORITHM: str = "HS256"

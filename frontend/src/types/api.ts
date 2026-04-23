@@ -200,3 +200,9 @@ export interface DeviceTypeUpdate {
   description?: string
   metric_ids?: string[]
 }
+
+export interface ExternalServices {
+  grafana_url: string
+  influxdb_url: string
+  emqx_url: string
+}
