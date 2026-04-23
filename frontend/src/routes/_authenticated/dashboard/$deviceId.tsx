@@ -88,7 +88,7 @@ function DeviceDetail() {
 
       {/* Metric selector */}
       {enabledMetrics.length > 0 && (
-        <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="mb-6 flex gap-2 overflow-x-auto py-2 scrollbar-hide">
           <button
             onClick={selectAll}
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
