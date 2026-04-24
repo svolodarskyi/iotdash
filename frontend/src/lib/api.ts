@@ -69,14 +69,3 @@ export function rewriteGrafanaUrl(url: string): string {
   return url.replace(/^http:\/\/grafana:3000/, GRAFANA_URL)
 }
 
-/**
- * Fetch external service URLs (admin-only).
- * Returns URLs for Grafana, InfluxDB, and EMQX web interfaces.
- */
-export async function getExternalServices() {
-  return apiFetch<{
-    grafana_url: string
-    influxdb_url: string
-    emqx_url: string
-  }>('/api/admin/external-services')
-}
