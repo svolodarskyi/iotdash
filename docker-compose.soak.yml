@@ -38,6 +38,10 @@ services:
     restart: always
 
   grafana:
+    environment:
+      # Fix localhost redirect - set to actual domain
+      GF_SERVER_DOMAIN: ${DOMAIN:-localhost}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000/grafana/}
     deploy:
       resources:
         limits:
@@ -58,7 +62,11 @@ services:
       dockerfile: Dockerfile.prod
     volumes: []  # No source mount in soak — use built image
     environment:
-      FRONTEND_URL: "http://localhost:5173"
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      # Public URLs for external services (prevents localhost redirects)
+      PUBLIC_GRAFANA_URL: ${PUBLIC_GRAFANA_URL:-http://localhost:3000/grafana/}
+      PUBLIC_INFLUXDB_URL: ${PUBLIC_INFLUXDB_URL:-http://localhost:8086/}
+      PUBLIC_EMQX_URL: ${PUBLIC_EMQX_URL:-http://localhost:18083/}
     deploy:
       resources:
         limits:
