@@ -15,12 +15,6 @@ class Settings(BaseSettings):
     MQTT_BROKER_PORT: int = 1883
     EMQX_WEB_URL: str = "http://emqx:18083"
 
-    # Public URLs for external services (used when deployed)
-    # If not set, will fall back to localhost URLs for local development
-    GRAFANA_PUBLIC_URL: str | None = None
-    INFLUXDB_PUBLIC_URL: str | None = None
-    EMQX_PUBLIC_URL: str | None = None
-
     JWT_SECRET_KEY: str = "dev-secret-change-in-production"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 1440  # 24 hours

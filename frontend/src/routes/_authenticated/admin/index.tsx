@@ -35,19 +35,19 @@ function AdminDashboard() {
       title: 'Grafana',
       description: 'View dashboards and alerts',
       url: externalServices?.grafana_url,
-      icon: '/grafana-logo.svg',
+      icon: '📊',
     },
     {
       title: 'InfluxDB',
       description: 'Query time-series data',
       url: externalServices?.influxdb_url,
-      icon: '/influxdb-logo.svg',
+      icon: '🗄️',
     },
     {
       title: 'EMQX',
       description: 'Monitor MQTT broker',
       url: externalServices?.emqx_url,
-      icon: '/emqx-logo.svg',
+      icon: '📡',
     },
   ]
 
@@ -88,7 +88,7 @@ function AdminDashboard() {
                 className="block p-6 bg-white rounded-lg border border-gray-200 hover:border-green-300 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <img src={link.icon} alt={`${link.title} logo`} className="w-8 h-8" />
+                  <span className="text-2xl">{link.icon}</span>
                   <h3 className="text-lg font-medium text-gray-900">{link.title}</h3>
                 </div>
                 <p className="text-sm text-gray-500">{link.description}</p>
