@@ -1,17 +1,10 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { getExternalServices } from '../../../lib/api'
 
 export const Route = createFileRoute('/_authenticated/admin/')({
   component: AdminDashboard,
 })
 
 function AdminDashboard() {
-  const { data: externalServices, isLoading: servicesLoading } = useQuery({
-    queryKey: ['external-services'],
-    queryFn: getExternalServices,
-  })
-
   const sections = [
     {
       title: 'Organisations',
@@ -27,27 +20,6 @@ function AdminDashboard() {
       title: 'Devices',
       description: 'Provision and configure IoT devices',
       to: '/admin/devices' as const,
-    },
-  ]
-
-  const externalLinks = [
-    {
-      title: 'Grafana',
-      description: 'View dashboards and alerts',
-      url: externalServices?.grafana_url,
-      icon: '📊',
-    },
-    {
-      title: 'InfluxDB',
-      description: 'Query time-series data',
-      url: externalServices?.influxdb_url,
-      icon: '🗄️',
-    },
-    {
-      title: 'EMQX',
-      description: 'Monitor MQTT broker',
-      url: externalServices?.emqx_url,
-      icon: '📡',
     },
   ]
 
@@ -69,32 +41,6 @@ function AdminDashboard() {
               <p className="text-sm text-gray-500">{s.description}</p>
             </Link>
           ))}
-        </div>
-      </div>
-
-      {/* External Services */}
-      <div>
-        <h2 className="text-lg font-medium text-gray-900 mb-4">External Services</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {servicesLoading ? (
-            <p className="text-gray-500 col-span-3">Loading services...</p>
-          ) : (
-            externalLinks.map((link) => (
-              <a
-                key={link.title}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block p-6 bg-white rounded-lg border border-gray-200 hover:border-green-300 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-2xl">{link.icon}</span>
-                  <h3 className="text-lg font-medium text-gray-900">{link.title}</h3>
-                </div>
-                <p className="text-sm text-gray-500">{link.description}</p>
-              </a>
-            ))
-          )}
         </div>
       </div>
     </div>
