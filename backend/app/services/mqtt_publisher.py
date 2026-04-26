@@ -10,6 +10,49 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
+def encode_payload(payload: dict) -> dict:
+    """
+    Encode the payload before sending to MQTT.
+
+    Currently just passes through the payload unchanged.
+
+    Args:
+        payload: The payload dictionary to encode
+
+    Returns:
+        Encoded payload dictionary
+
+    ═══════════════════════════════════════════════════════════════════════
+    TODO: ADD YOUR ENCODING LOGIC HERE
+    ═══════════════════════════════════════════════════════════════════════
+    Examples of what you might add:
+
+    # Base64 encode specific fields:
+    # import base64
+    # for key, value in payload.items():
+    #     if isinstance(value, (int, float)):
+    #         value_str = str(value)
+    #         encoded = base64.b64encode(value_str.encode()).decode()
+    #         payload[key] = encoded
+
+    # Hex encode numeric values:
+    # for key, value in payload.items():
+    #     if isinstance(value, int):
+    #         payload[key] = hex(value)
+
+    # Custom binary protocol encoding:
+    # import struct
+    # for key, value in payload.items():
+    #     if isinstance(value, float):
+    #         packed = struct.pack('<f', value)
+    #         payload[key] = packed.hex()
+
+    ═══════════════════════════════════════════════════════════════════════
+    """
+    # Placeholder: just return the input unchanged
+    return payload
+
+
 class MqttPublisher:
     def __init__(self, broker_host: str, broker_port: int) -> None:
         self._broker_host = broker_host
@@ -40,7 +83,14 @@ class MqttPublisher:
                            Includes ALL metrics the device type supports.
         """
         topic = f"{device_code}/to/config"
-        payload = json.dumps({"metrics": metrics_state})
+
+        # ═══════════════════════════════════════════════════════════════════════
+        # Encode the payload before sending to MQTT
+        # ═══════════════════════════════════════════════════════════════════════
+        payload_dict = {"metrics": metrics_state}
+        encoded_payload_dict = encode_payload(payload_dict)  # Apply encoding
+        payload = json.dumps(encoded_payload_dict)
+
         try:
             client = self._connect()
             result = client.publish(topic, payload, qos=0)
