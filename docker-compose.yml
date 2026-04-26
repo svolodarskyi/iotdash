@@ -25,7 +25,9 @@ services:
 
   # ── Bridge: MQTT → InfluxDB ──────────────────────
   telegraf:
-    image: telegraf:1.33
+    build:
+      context: .
+      dockerfile: telegraf.Dockerfile
     container_name: telegraf
     volumes:
       - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
