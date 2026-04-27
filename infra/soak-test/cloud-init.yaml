@@ -48,45 +48,8 @@ runcmd:
   - chown -R azureuser:azureuser /opt/iotdash
   - su - azureuser -c "git config --global --add safe.directory /opt/iotdash"
 
-  # Start the stack with soak overrides
-  - cd /opt/iotdash && docker compose -f docker-compose.yml -f docker-compose.soak.yml up -d --build
-
-  # Install Python deps for simulator
-  - python3 -m venv /opt/iotdash/.venv
-  - /opt/iotdash/.venv/bin/pip install aiomqtt
-
-  # Start the simulator as a systemd service
-  - |
-    cat > /etc/systemd/system/soak-simulator.service <<'EOF'
-    [Unit]
-    Description=IoTDash Soak Test Simulator
-    After=docker.service
-    Requires=docker.service
-
-    [Service]
-    Type=simple
-    User=azureuser
-    WorkingDirectory=/opt/iotdash
-    ExecStartPre=/bin/sleep 60
-    ExecStart=/opt/iotdash/.venv/bin/python tools/soak_simulator.py --devices ${device_count} --interval ${publish_interval} --broker localhost --port 1883 --ramp-rate 5
-    Restart=on-failure
-    RestartSec=30
-
-    [Install]
-    WantedBy=multi-user.target
-    EOF
-  - systemctl daemon-reload
-  - systemctl enable soak-simulator
-  - systemctl start soak-simulator
-
-  # Set up monitoring cron
-  - chmod +x /opt/iotdash/tools/soak_monitor.sh
-  - chmod +x /opt/iotdash/tools/soak_alerter.sh
-  - |
-    crontab -u azureuser - <<'CRON'
-    */5 * * * * /opt/iotdash/tools/soak_monitor.sh >> /opt/iotdash/soak-monitor.log 2>&1
-    */15 * * * * ALERT_WEBHOOK_URL="${alert_webhook_url}" /opt/iotdash/tools/soak_alerter.sh >> /opt/iotdash/soak-alerter.log 2>&1
-    CRON
+  # Start the stack (production mode - no soak testing)
+  - cd /opt/iotdash && docker compose -f docker-compose.yml up -d --build
 
   # Set InfluxDB retention policy to 14 days (after services are up)
   - |
