@@ -82,7 +82,7 @@ class MqttPublisher:
             metrics_state: Dict of metric_name -> 1 (enabled) or 0 (disabled).
                            Includes ALL metrics the device type supports.
         """
-        topic = f"{device_code}/to/config"
+        topic = f"iot/{device_code}/mo/cfg"
 
         # ═══════════════════════════════════════════════════════════════════════
         # Encode the payload before sending to MQTT

@@ -149,7 +149,11 @@ Once you have the public IP or domain, devices will connect with:
 # Example connection details
 MQTT_BROKER = "20.123.45.67"  # Your Azure public IP or domain
 MQTT_PORT = 1883              # Or 8883 for TLS
-MQTT_TOPIC = "DEVICE_CODE/from/message"
+
+# Topic structure
+DEVICE_CODE = "DEVICE001"
+TOPIC_PUBLISH = f"iot/{DEVICE_CODE}/mo/message"  # Device sends data
+TOPIC_SUBSCRIBE = f"iot/{DEVICE_CODE}/mo/cfg"    # Device receives config
 ```
 
 ---
@@ -167,7 +171,8 @@ import time
 MQTT_BROKER = "YOUR_AZURE_IP_OR_DOMAIN"  # e.g., "20.123.45.67"
 MQTT_PORT = 1883
 DEVICE_CODE = "DEVICE001"  # Your device unique code
-MQTT_TOPIC = f"{DEVICE_CODE}/from/message"
+TOPIC_PUBLISH = f"iot/{DEVICE_CODE}/mo/message"  # Send data to server
+TOPIC_SUBSCRIBE = f"iot/{DEVICE_CODE}/mo/cfg"    # Receive config from server
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -199,8 +204,8 @@ while True:
 
     # Publish to Azure
     payload = json.dumps(data)
-    result = client.publish(MQTT_TOPIC, payload, qos=0)
-    print(f"Sent: {payload}")
+    result = client.publish(TOPIC_PUBLISH, payload, qos=0)
+    print(f"Sent to {TOPIC_PUBLISH}: {payload}")
 
     time.sleep(10)  # Send every 10 seconds
 ```
@@ -217,7 +222,8 @@ from machine import Pin
 MQTT_BROKER = "YOUR_AZURE_IP_OR_DOMAIN"  # e.g., "20.123.45.67"
 MQTT_PORT = 1883
 DEVICE_CODE = "DEVICE001"
-MQTT_TOPIC = f"{DEVICE_CODE}/from/message"
+TOPIC_PUBLISH = f"iot/{DEVICE_CODE}/mo/message"
+TOPIC_SUBSCRIBE = f"iot/{DEVICE_CODE}/mo/cfg"
 
 # Connect to WiFi first (not shown)
 # ...
@@ -237,7 +243,8 @@ while True:
 
     # Publish to Azure
     payload = ujson.dumps(data)
-    client.publish(MQTT_TOPIC, payload)
+    topic = f"iot/{DEVICE_CODE}/mo/message"
+    client.publish(topic, payload)
     print(f"Sent: {payload}")
 
     time.sleep(10)
@@ -258,7 +265,8 @@ const char* password = "YOUR_WIFI_PASSWORD";
 const char* mqtt_broker = "YOUR_AZURE_IP_OR_DOMAIN";  // e.g., "20.123.45.67"
 const int mqtt_port = 1883;
 const char* device_code = "DEVICE001";
-const char* mqtt_topic = "DEVICE001/from/message";
+const char* topic_publish = "iot/DEVICE001/mo/message";
+const char* topic_subscribe = "iot/DEVICE001/mo/cfg";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -306,8 +314,10 @@ void loop() {
   serializeJson(doc, payload);
 
   // Publish to Azure
-  client.publish(mqtt_topic, payload);
-  Serial.print("Sent: ");
+  client.publish(topic_publish, payload);
+  Serial.print("Sent to ");
+  Serial.print(topic_publish);
+  Serial.print(": ");
   Serial.println(payload);
 
   delay(10000);  // Send every 10 seconds
@@ -333,7 +343,7 @@ The device code in your firmware **must match** the device code in IoTDash!
 
 ## Step 6: Message Format
 
-Devices must send messages in JSON format to topic: `{DEVICE_CODE}/from/message`
+Devices must send messages in JSON format to topic: `iot/{DEVICE_CODE}/mo/message`
 
 ### Required Format:
 
@@ -345,9 +355,15 @@ Devices must send messages in JSON format to topic: `{DEVICE_CODE}/from/message`
 }
 ```
 
-- **Topic**: `DEVICE001/from/message` (replace DEVICE001 with your device code)
+- **Topic**: `iot/DEVICE001/mo/message` (replace DEVICE001 with your device code)
 - **QoS**: 0 or 1
 - **Format**: JSON object with metric names as keys
+
+**Topic Structure:**
+- `iot` - Fixed prefix
+- `DEVICE001` - Your device unique code
+- `mo` - Message Originated
+- `message` - Data messages / `cfg` - Config messages
 
 ### Example Messages:
 
