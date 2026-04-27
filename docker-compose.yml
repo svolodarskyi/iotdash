@@ -25,10 +25,13 @@ services:
 
   # ── Bridge: MQTT → InfluxDB ──────────────────────
   telegraf:
-    image: telegraf:1.33
+    build:
+      context: .
+      dockerfile: telegraf.Dockerfile
     container_name: telegraf
     volumes:
       - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - ./telegraf_decoder.py:/etc/telegraf/scripts/telegraf_decoder.py:ro
     depends_on:
       emqx:
         condition: service_healthy
