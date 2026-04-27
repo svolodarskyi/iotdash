@@ -2,7 +2,9 @@
 
 import json
 import logging
+import base64
 
+import msgpack
 import paho.mqtt.client as mqtt
 
 from app.config import settings
@@ -10,47 +12,39 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
-def encode_payload(payload: dict) -> dict:
+def encode_payload(payload: dict) -> bytes:
     """
-    Encode the payload before sending to MQTT.
+    Encode the payload to MessagePack before sending to MQTT.
 
-    Currently just passes through the payload unchanged.
+    Converts the payload dictionary to MessagePack binary format,
+    then base64 encodes it for transport over MQTT.
 
     Args:
         payload: The payload dictionary to encode
 
     Returns:
-        Encoded payload dictionary
+        Base64-encoded MessagePack bytes (as string for MQTT transport)
 
-    ═══════════════════════════════════════════════════════════════════════
-    TODO: ADD YOUR ENCODING LOGIC HERE
-    ═══════════════════════════════════════════════════════════════════════
-    Examples of what you might add:
-
-    # Base64 encode specific fields:
-    # import base64
-    # for key, value in payload.items():
-    #     if isinstance(value, (int, float)):
-    #         value_str = str(value)
-    #         encoded = base64.b64encode(value_str.encode()).decode()
-    #         payload[key] = encoded
-
-    # Hex encode numeric values:
-    # for key, value in payload.items():
-    #     if isinstance(value, int):
-    #         payload[key] = hex(value)
-
-    # Custom binary protocol encoding:
-    # import struct
-    # for key, value in payload.items():
-    #     if isinstance(value, float):
-    #         packed = struct.pack('<f', value)
-    #         payload[key] = packed.hex()
-
-    ═══════════════════════════════════════════════════════════════════════
+    Example:
+        >>> payload = {"metrics": {"temperature": 1, "humidity": 0}}
+        >>> encoded = encode_payload(payload)
+        >>> # Returns base64-encoded MessagePack binary
     """
-    # Placeholder: just return the input unchanged
-    return payload
+    try:
+        # Pack to MessagePack binary format
+        msgpack_bytes = msgpack.packb(payload, use_bin_type=True)
+
+        # Base64 encode for safe MQTT transport
+        # Note: Some MQTT clients can send raw binary, but base64 is safer
+        encoded = base64.b64encode(msgpack_bytes).decode('ascii')
+
+        logger.debug(f"Encoded payload to MessagePack (base64): {encoded[:100]}...")
+        return encoded
+
+    except Exception as e:
+        logger.exception(f"Failed to encode payload to MessagePack: {e}")
+        # Fallback to JSON encoding
+        return json.dumps(payload)
 
 
 class MqttPublisher:
@@ -85,11 +79,10 @@ class MqttPublisher:
         topic = f"iot/{device_code}/mo/cfg"
 
         # ═══════════════════════════════════════════════════════════════════════
-        # Encode the payload before sending to MQTT
+        # Encode the payload to MessagePack before sending to MQTT
         # ═══════════════════════════════════════════════════════════════════════
         payload_dict = {"metrics": metrics_state}
-        encoded_payload_dict = encode_payload(payload_dict)  # Apply encoding
-        payload = json.dumps(encoded_payload_dict)
+        payload = encode_payload(payload_dict)  # Returns base64-encoded MessagePack
 
         try:
             client = self._connect()
