@@ -2,46 +2,53 @@
 """
 Telegraf execd processor for decoding MQTT messages.
 
-This script reads influx line protocol from stdin, decodes the data,
+This script reads influx line protocol from stdin, decodes MessagePack data,
 and writes the transformed data back to stdout in influx format.
-
-Currently implements pass-through logic - actual decoding logic to be added later.
 """
 
 import sys
+import msgpack
+import base64
 
 
 def decode_payload(payload: str) -> str:
     """
-    Decode the payload from the device.
+    Decode MessagePack payload from the device.
 
-    Currently just passes through the value unchanged.
+    Assumes payload is MessagePack data (possibly base64 encoded).
+    Decodes it using msgpack.unpackb and returns the unpacked value.
 
     Args:
-        payload: The raw payload string (e.g., encoded base64, hex, etc.)
+        payload: The MessagePack payload (raw bytes, base64, or hex encoded)
 
     Returns:
-        Decoded payload string
-
-    ═══════════════════════════════════════════════════════════════════════
-    TODO: ADD YOUR ACTUAL DECODING LOGIC HERE
-    ═══════════════════════════════════════════════════════════════════════
-    Examples of what you might add:
-
-    # Base64 decoding:
-    # import base64
-    # return base64.b64decode(payload).decode('utf-8')
-
-    # Hex decoding:
-    # return bytes.fromhex(payload).decode('utf-8')
-
-    # Custom binary protocol decoding:
-    # decoded = struct.unpack('<f', bytes.fromhex(payload))[0]
-    # return str(decoded)
-    ═══════════════════════════════════════════════════════════════════════
+        Decoded payload as string
     """
-    # Placeholder: just return the input unchanged
-    return payload
+    try:
+        # Try to decode as base64 first (common encoding for binary data in text protocols)
+        try:
+            msgpack_bytes = base64.b64decode(payload)
+        except Exception:
+            # If not base64, try hex encoding
+            try:
+                msgpack_bytes = bytes.fromhex(payload)
+            except ValueError:
+                # If neither base64 nor hex, treat as raw bytes
+                if isinstance(payload, str):
+                    msgpack_bytes = payload.encode('latin1')
+                else:
+                    msgpack_bytes = payload
+
+        # Unpack MessagePack data
+        decoded = msgpack.unpackb(msgpack_bytes, raw=False)
+
+        # Convert decoded data to string
+        return str(decoded)
+
+    except Exception as e:
+        # If MessagePack decoding fails, pass through original value
+        print(f"MessagePack decode error for payload '{payload[:50]}...': {e}", file=sys.stderr)
+        return payload
 
 
 def process_line(line: str) -> str:
